@@ -277,16 +277,16 @@ public class MainMenu extends JPanel {
 						clear = false;
 					}
 					if (FollowCompare.getSelectedIndex() == 0) {
-						url += "follower%3A<" + FollowValue.getText();
+						url += "followers%3A<" + FollowValue.getText();
 					}
 					else if (FollowCompare.getSelectedIndex() == 1) {
-						url += "follower%3A<%3D" + FollowValue.getText();
+						url += "followers%3A<%3D" + FollowValue.getText();
 					}
 					else if (FollowCompare.getSelectedIndex() == 2) {
-						url += "follower%3A>" + FollowValue.getText();
+						url += "followers%3A>" + FollowValue.getText();
 					}
 					else {
-						url += "follower%3A>%3D" + FollowValue.getText();
+						url += "followers%3A>%3D" + FollowValue.getText();
 					}
 				}
 
