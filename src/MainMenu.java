@@ -13,6 +13,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.Base64;
 
 import javax.imageio.ImageIO;
 import javax.swing.AbstractAction;
@@ -23,8 +24,10 @@ import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
+import javax.swing.JFrame;
 import javax.swing.JLabel;
 
+import java.awt.CardLayout;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.event.ActionListener;
@@ -39,6 +42,8 @@ import javax.swing.LayoutStyle.ComponentPlacement;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
 
 public class MainMenu extends JPanel {
 	
@@ -52,17 +57,25 @@ public class MainMenu extends JPanel {
 	private JCheckBox FollowFilter;
 	private JCheckBox RepoFilter;
 	private JPanel panel;
+	private JFrame frame;
 
 	/**
 	 * Create the panel.
 	 */
-	public MainMenu() {
+	public MainMenu(JFrame f) {
+		addComponentListener(new ComponentAdapter() {
+			@Override
+			public void componentShown(ComponentEvent arg0) {
+				keyword.requestFocus();
+			}
+		});
+		frame = f;
 		setPreferredSize(new Dimension(500, 400));
 		
 		GridBagLayout gridBagLayout = new GridBagLayout();
 		gridBagLayout.columnWidths = new int[]{111, 68, 304, 0};
 		gridBagLayout.rowHeights = new int[]{83, 19, 24, 15, 24, 24, 33, 28, 0};
-		gridBagLayout.columnWeights = new double[]{0.0, 0.0, 0.0, Double.MIN_VALUE};
+		gridBagLayout.columnWeights = new double[]{1.0, 0.0, 0.0, Double.MIN_VALUE};
 		gridBagLayout.rowWeights = new double[]{0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, Double.MIN_VALUE};
 		setLayout(gridBagLayout);
 		
@@ -75,12 +88,12 @@ public class MainMenu extends JPanel {
 			logo = new JLabel("No image");
 		}
 		logo.setHorizontalAlignment(SwingConstants.RIGHT);
-		logo.addMouseListener(new MouseAdapter() {
+		/*logo.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent arg0) {
 				System.out.println("Back to main menu\n");
 			}
-		});
+		});*/
 		GridBagConstraints gbc_logo = new GridBagConstraints();
 		gbc_logo.fill = GridBagConstraints.BOTH;
 		gbc_logo.insets = new Insets(5, 5, 5, 5);
@@ -219,97 +232,98 @@ public class MainMenu extends JPanel {
 	}
 	
 	public void Search() {
-		new Thread(new Runnable() {
-
-			@Override
-			public void run() {
-				String url = new String("https://api.github.com/search/users?q=");
-				boolean clear = true;
-				if (!keyword.getText().isEmpty()) {
-					clear = false;
-					for (int i = 0; i < keyword.getText().length(); i++) {
-						if (keyword.getText().charAt(i) == ' ') {
-							url += "+";
-						}
-						else {
-							url += keyword.getText().charAt(i);
-						}
-					}
-					
-					url += "+in%3A";
-					if (SearchBy.getSelectedIndex() == 0) {
-						url += "login";
-					}
-					else if (SearchBy.getSelectedIndex() == 1) {
-						url += "fullname";
-					}
-					else {
-						url += "email";
-					}
-				}
-				
-				if (RepoFilter.isSelected() && !RepoValue.getText().isEmpty()) {
-					if (!clear) {
-						url += "+";
-					}
-					else {
-						clear = false;
-					}
-					if (RepoCompare.getSelectedIndex() == 0) {
-						url += "repos%3A<" + RepoValue.getText();
-					}
-					else if (RepoCompare.getSelectedIndex() == 1) {
-						url += "repos%3A<%3D" + RepoValue.getText();
-					}
-					else if (RepoCompare.getSelectedIndex() == 2) {
-						url += "repos%3A>" + RepoValue.getText();
-					}
-					else {
-						url += "repos%3A>%3D" + RepoValue.getText();
-					}
-				}
-				
-				if (FollowFilter.isSelected() && !FollowValue.getText().isEmpty()) {
-					if (!clear) {
-						url += "+";
-					}
-					else {
-						clear = false;
-					}
-					if (FollowCompare.getSelectedIndex() == 0) {
-						url += "followers%3A<" + FollowValue.getText();
-					}
-					else if (FollowCompare.getSelectedIndex() == 1) {
-						url += "followers%3A<%3D" + FollowValue.getText();
-					}
-					else if (FollowCompare.getSelectedIndex() == 2) {
-						url += "followers%3A>" + FollowValue.getText();
-					}
-					else {
-						url += "followers%3A>%3D" + FollowValue.getText();
-					}
-				}
-
-				if (!clear) {
-					url += "&";
+		String url = new String("https://api.github.com/search/users?q=");
+		boolean clear = true;
+		if (!keyword.getText().isEmpty()) {
+			clear = false;
+			for (int i = 0; i < keyword.getText().length(); i++) {
+				if (keyword.getText().charAt(i) == ' ') {
+					url += "+";
 				}
 				else {
-					clear = false;
-				}
-				url += "type=Users";
-				try {
-					getRequest(url);
-				} catch (Exception e) {
-					System.out.println("request error");
-					e.printStackTrace();
+					url += keyword.getText().charAt(i);
 				}
 			}
-		}).start();
+			
+			url += "+in%3A";
+			if (SearchBy.getSelectedIndex() == 0) {
+				url += "login";
+			}
+			else if (SearchBy.getSelectedIndex() == 1) {
+				url += "fullname";
+			}
+			else {
+				url += "email";
+			}
+		}
+		
+		if (RepoFilter.isSelected() && !RepoValue.getText().isEmpty()) {
+			if (!clear) {
+				url += "+";
+			}
+			else {
+				clear = false;
+			}
+			if (RepoCompare.getSelectedIndex() == 0) {
+				url += "repos%3A<" + RepoValue.getText();
+			}
+			else if (RepoCompare.getSelectedIndex() == 1) {
+				url += "repos%3A<%3D" + RepoValue.getText();
+			}
+			else if (RepoCompare.getSelectedIndex() == 2) {
+				url += "repos%3A>" + RepoValue.getText();
+			}
+			else {
+				url += "repos%3A>%3D" + RepoValue.getText();
+			}
+		}
+		
+		if (FollowFilter.isSelected() && !FollowValue.getText().isEmpty()) {
+			if (!clear) {
+				url += "+";
+			}
+			else {
+				clear = false;
+			}
+			if (FollowCompare.getSelectedIndex() == 0) {
+				url += "followers%3A<" + FollowValue.getText();
+			}
+			else if (FollowCompare.getSelectedIndex() == 1) {
+				url += "followers%3A<%3D" + FollowValue.getText();
+			}
+			else if (FollowCompare.getSelectedIndex() == 2) {
+				url += "followers%3A>" + FollowValue.getText();
+			}
+			else {
+				url += "followers%3A>%3D" + FollowValue.getText();
+			}
+		}
+
+		if (!clear) {
+			url += "&";
+		}
+		else {
+			clear = false;
+		}
+		url += "type=Users";
+		try {
+			JSONObject result = getRequest(url);
+			UserResult panel_1 = new UserResult(frame, url, result);
+			frame.getContentPane().add(panel_1, "user_result");
+			reset();
+			CardLayout cardLayout = (CardLayout) frame.getContentPane().getLayout();
+			cardLayout.show(frame.getContentPane(), "user_result");
+		} catch (Exception e) {
+			System.out.println("request error");
+			e.printStackTrace();
+		}
 	}
 	
-	private void getRequest(String url) throws Exception {
+	private JSONObject getRequest(String url) throws Exception {
+		String token ="b4565a9f29f8c0d8689dd1ea6357b9cd0d8932f9";
 		URL obj = new URL(url);
 		HttpURLConnection conn = (HttpURLConnection) obj.openConnection();
+		conn.setRequestProperty("Authorization", "token " + token);
 
 		conn.setRequestMethod("GET");
 		int responseCode = conn.getResponseCode();
@@ -331,10 +345,23 @@ public class MainMenu extends JPanel {
 	    if (total > 0) {
 	    	JSONArray array = (JSONArray) obj3.get("items");
 	    	System.out.println("Users :");
-	    	for (int i = 0; i < total; i++) {
+	    	for (int i = 0; i < (total > 30 ? 30 : total); i++) {
 	    		System.out.println(i+": "+((JSONObject) array.get(i)).get("login"));
 	    	}
 	    }
+	    
+	    return obj3;
+	}
+	
+	public void reset() {
+		keyword.setText("");
+		SearchBy.setSelectedIndex(0);
+		RepoFilter.setSelected(false);
+		RepoCompare.setSelectedIndex(0);
+		RepoValue.setText("");
+		FollowFilter.setSelected(false);
+		FollowCompare.setSelectedIndex(0);
+		FollowValue.setText("");
 	}
 	
 	/**

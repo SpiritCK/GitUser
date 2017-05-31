@@ -69,7 +69,8 @@ public class GitUser {
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frame.getContentPane().setLayout(new CardLayout(0, 0));
 		
-		MainMenu panel_1 = new MainMenu();
+		MainMenu panel_1 = new MainMenu(frame);
+		//UserResult panel_1 = new UserResult();
 		frame.getContentPane().add(panel_1, "main_menu");
 	}
 }
