@@ -1,8 +1,13 @@
+import java.awt.CardLayout;
+import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Image;
 import java.awt.Insets;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
@@ -17,28 +22,23 @@ import javax.imageio.ImageIO;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.ImageIcon;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.SwingConstants;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.KeyStroke;
+import javax.swing.SwingConstants;
 import javax.swing.border.LineBorder;
 
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 
-import java.awt.CardLayout;
-import java.awt.Color;
-import javax.swing.KeyStroke;
-import javax.swing.JScrollPane;
-import java.awt.event.ActionListener;
-import java.awt.event.KeyEvent;
-import java.awt.event.ActionEvent;
-
 @SuppressWarnings("serial")
-public class UserResult extends JPanel {
+public class RepoResult extends JPanel {
+
 	final static int DEFAULT_PAGE_SIZE = 30;
 	private JFrame frame;
 	private String url;
@@ -46,33 +46,31 @@ public class UserResult extends JPanel {
 	private long totalPage;
 	private long totalFound;
 	private JLabel lblPageOf;
-	private boolean detail;
 	private JLabel status;
 
 	/**
 	 * Create the panel.
 	 */
-	public UserResult(JFrame f, String u, JSONObject page1, boolean d) {
-		totalFound = (long) page1.get("total_count");
-		totalPage = (int) page1.get("page_number");
+	public RepoResult(JFrame f, String u, JSONObject user) {
+		//totalFound = (long) page1.get("total_count");
+		//totalPage = (int) page1.get("page_number");
 		frame = f;
 		url = u;
 		curPage = 1;
-		detail = d;
 		setPreferredSize(new Dimension(500, 400));
 		
 		GridBagLayout gridBagLayout = new GridBagLayout();
 		gridBagLayout.columnWidths = new int[]{111, 118, 254, 0};
-		gridBagLayout.rowHeights = new int[]{83, 19, 246, 36, 0};
+		gridBagLayout.rowHeights = new int[]{83, 120, 145, 36, 0};
 		gridBagLayout.columnWeights = new double[]{1.0, 0.0, 0.0, Double.MIN_VALUE};
-		gridBagLayout.rowWeights = new double[]{0.0, 0.0, 1.0, 1.0, Double.MIN_VALUE};
+		gridBagLayout.rowWeights = new double[]{0.0, 1.0, 1.0, 1.0, Double.MIN_VALUE};
 		setLayout(gridBagLayout);
 		
 		JButton btnBack = new JButton("Back");
 		btnBack.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				CardLayout cardLayout = (CardLayout) frame.getContentPane().getLayout();
-				cardLayout.show(frame.getContentPane(), "main_menu");
+				cardLayout.show(frame.getContentPane(), "user_result");
 			}
 		});
 		btnBack.setVerticalAlignment(SwingConstants.TOP);
@@ -107,22 +105,96 @@ public class UserResult extends JPanel {
 		gbc_logo.gridy = 0;
 		add(logo, gbc_logo);
 		
-		JLabel TotalFound = new JLabel("Search result : "+totalFound+" match");
-		GridBagConstraints gbc_TotalFound = new GridBagConstraints();
-		gbc_TotalFound.anchor = GridBagConstraints.NORTHWEST;
-		gbc_TotalFound.gridwidth = 2;
-		gbc_TotalFound.insets = new Insets(5, 5, 5, 5);
-		gbc_TotalFound.gridx = 0;
-		gbc_TotalFound.gridy = 1;
-		add(TotalFound, gbc_TotalFound);
+
+		/////////////////////////////User data//////////////////////////////////
+		JPanel panel = new JPanel();
+		GridBagConstraints gbc_panel = new GridBagConstraints();
+		gbc_panel.gridwidth = 3;
+		gbc_panel.insets = new Insets(5, 5, 5, 5);
+		gbc_panel.fill = GridBagConstraints.BOTH;
+		gbc_panel.gridx = 0;
+		gbc_panel.gridy = 1;
+		add(panel, gbc_panel);
+		//panel.setBorder(new LineBorder(new Color(0, 0, 0)));
+		GridBagLayout gbl_panel = new GridBagLayout();
+		gbl_panel.columnWidths = new int[]{0, 300, 0};
+		gbl_panel.rowHeights = new int[]{0, 0, 0, 0, 0, 0};
+		gbl_panel.columnWeights = new double[]{0.0, 0.0, Double.MIN_VALUE};
+		gbl_panel.rowWeights = new double[]{0.0, 0.0, 0.0, 0.0, 0.0, Double.MIN_VALUE};
+		panel.setLayout(gbl_panel);
 		
-		status = new JLabel("Search took too long to finish");
-		GridBagConstraints gbc_status = new GridBagConstraints();
-		gbc_status.anchor = GridBagConstraints.NORTHEAST;
-		gbc_status.insets = new Insets(5, 5, 5, 5);
-		gbc_status.gridx = 2;
-		gbc_status.gridy = 1;
-		add(status, gbc_status);
+		JLabel pic;
+		try {
+			String path = user.get("avatar_url").toString();
+		    URL url = new URL(path);
+		    BufferedImage image = ImageIO.read(url);
+			pic = new JLabel(new ImageIcon(image.getScaledInstance(80,  80, Image.SCALE_DEFAULT)));
+		} catch (IOException e1) {
+			pic = new JLabel();
+			e1.printStackTrace();
+		}
+		pic.setBorder(new LineBorder(new Color(0, 0, 0)));
+		pic.setPreferredSize(new Dimension(80, 80));
+		GridBagConstraints gbc_pic = new GridBagConstraints();
+		gbc_pic.gridheight = 7;
+		gbc_pic.anchor = GridBagConstraints.CENTER;
+		gbc_pic.insets = new Insets(0, 10, 0, 10);
+		gbc_pic.gridx = 0;
+		gbc_pic.gridy = 0;
+		panel.add(pic, gbc_pic);
+		
+		JLabel username = new JLabel(user.get("login").toString());
+		GridBagConstraints gbc_username = new GridBagConstraints();
+		gbc_username.anchor = GridBagConstraints.WEST;
+		gbc_username.insets = new Insets(8, 5, 0, 0);
+		gbc_username.gridx = 1;
+		gbc_username.gridy = 0;
+		panel.add(username, gbc_username);
+		
+		JLabel nama;
+		if (user.get("name") == null) {
+			nama = new JLabel("-");
+		}
+		else {
+			nama = new JLabel(user.get("name").toString());
+		}
+		GridBagConstraints gbc_nama = new GridBagConstraints();
+		gbc_nama.anchor = GridBagConstraints.WEST;
+		gbc_nama.insets = new Insets(5, 5, 0, 0);
+		gbc_nama.gridx = 1;
+		gbc_nama.gridy = 1;
+		panel.add(nama, gbc_nama);
+		
+		JLabel email;
+		if (user.get("email") == null) {
+			email = new JLabel("-");
+		}
+		else {
+			email = new JLabel(user.get("email").toString());
+		}
+		GridBagConstraints gbc_email = new GridBagConstraints();
+		gbc_email.anchor = GridBagConstraints.WEST;
+		gbc_email.insets = new Insets(5, 5, 0, 0);
+		gbc_email.gridx = 1;
+		gbc_email.gridy = 2;
+		panel.add(email, gbc_email);
+		
+		JLabel repo = new JLabel("Repositories : "+user.get("public_repos").toString());
+		GridBagConstraints gbc_repo = new GridBagConstraints();
+		gbc_repo.anchor = GridBagConstraints.WEST;
+		gbc_repo.insets = new Insets(5, 5, 0, 0);
+		gbc_repo.gridx = 1;
+		gbc_repo.gridy = 3;
+		panel.add(repo, gbc_repo);
+		
+		JLabel follower = new JLabel("Followers : "+user.get("followers").toString());
+		GridBagConstraints gbc_follower = new GridBagConstraints();
+		gbc_follower.anchor = GridBagConstraints.WEST;
+		gbc_follower.insets = new Insets(5, 5, 5, 0);
+		gbc_follower.gridx = 1;
+		gbc_follower.gridy = 4;
+		panel.add(follower, gbc_follower);
+		////////////////////////////////////////////////////////////////////////
 		
 		JScrollPane scrollPane = new JScrollPane();
 		scrollPane.setBorder(new LineBorder(new Color(0, 0, 0)));
@@ -145,7 +217,7 @@ public class UserResult extends JPanel {
 		gbl_content.rowWeights = new double[]{0.0, Double.MIN_VALUE};
 		content.setLayout(gbl_content);
 		
-		showResult(page1, content);
+		//showResult(page1, content);
 		////////////////////////////////////////////////////////////////////////
 		
 
@@ -264,7 +336,7 @@ public class UserResult extends JPanel {
 		}
 		////////////////////////////////////////////////////////////////////////
 
-		Action refresh = new AbstractAction() {
+		/*Action refresh = new AbstractAction() {
 			private static final long serialVersionUID = 1L;
 			
 			@Override
@@ -274,7 +346,7 @@ public class UserResult extends JPanel {
         };
         int temp = JComponent.WHEN_IN_FOCUSED_WINDOW;
         bindKeyStroke(temp, "refresh", KeyStroke.getKeyStroke(KeyEvent.VK_F5, 0), refresh);
-        bindKeyStroke(temp, "refresh", KeyStroke.getKeyStroke(KeyEvent.VK_R, 0), refresh);
+        bindKeyStroke(temp, "refresh", KeyStroke.getKeyStroke(KeyEvent.VK_R, 0), refresh);*/
 	}
 
 	private Object getRequest(String url) throws Exception {
@@ -317,19 +389,19 @@ public class UserResult extends JPanel {
 			JSONObject obj;
 			try {
 				User user;
-				if (detail) {
+				/*if (detail) {
 					obj = (JSONObject) getRequest(link);
-					user = new User(frame, obj, detail);
+					user = new User(obj, detail);
 				}
 				else {
-					user = new User(frame, (JSONObject) ((JSONArray) data.get("items")).get((int) (i-startCount)), detail);
-				}
+					user = new User((JSONObject) ((JSONArray) data.get("items")).get((int) (i-startCount)), detail);
+				}*/
 				GridBagConstraints gbc_user = new GridBagConstraints();
 				gbc_user.insets = new Insets(5, 10, 5, 10);
 				gbc_user.fill = GridBagConstraints.BOTH;
 				gbc_user.gridx = 0;
 				gbc_user.gridy = (int) (i-startCount);
-				content.add(user, gbc_user);
+				//content.add(user, gbc_user);
 				System.out.println(i+" : "+((JSONObject) ((JSONArray) data.get("items")).get((int) (i-startCount))).get("login"));
 			} catch (Exception e) {
 				e.printStackTrace();
@@ -349,16 +421,4 @@ public class UserResult extends JPanel {
 		}
 		
 	}
-	
-	/**
-	 * mengikat tombol keyboard dengan aksi
-	 * @param condition kondisi utama
-	 * @param name nama aksi
-	 * @param keyStroke tombol yang ditekan
-	 * @param action aksi yang dijalankan
-	 */
-    protected void bindKeyStroke(int condition, String name, KeyStroke keyStroke, Action action) {
-    	getInputMap(condition).put(keyStroke, name);
-        getActionMap().put(name, action);
-    }
 }

@@ -153,6 +153,7 @@ public class MainMenu extends JPanel {
 		add(label3, gbc_label3);
 		
 		RepoFilter = new JCheckBox("Repository :");
+		RepoFilter.setMnemonic(KeyEvent.VK_R);
 		GridBagConstraints gbc_RepoFilter = new GridBagConstraints();
 		gbc_RepoFilter.anchor = GridBagConstraints.NORTHWEST;
 		gbc_RepoFilter.insets = new Insets(5, 5, 5, 5);
@@ -180,6 +181,7 @@ public class MainMenu extends JPanel {
 		add(RepoValue, gbc_RepoValue);
 		
 		FollowFilter = new JCheckBox("Follower :");
+		FollowFilter.setMnemonic(KeyEvent.VK_F);
 		GridBagConstraints gbc_FollowFilter = new GridBagConstraints();
 		gbc_FollowFilter.anchor = GridBagConstraints.NORTHWEST;
 		gbc_FollowFilter.insets = new Insets(5, 5, 5, 5);
@@ -215,6 +217,7 @@ public class MainMenu extends JPanel {
 		});
 		
 		detail = new JCheckBox("Show detailed result (may cause the program to run slowly)");
+		detail.setMnemonic(KeyEvent.VK_S);
 		GridBagConstraints gbc_detail = new GridBagConstraints();
 		gbc_detail.anchor = GridBagConstraints.NORTHWEST;
 		gbc_detail.gridwidth = 3;
@@ -320,7 +323,7 @@ public class MainMenu extends JPanel {
 		url += "type=Users";
 		try {
 			System.out.println(url);
-			JSONObject result = getRequest(url);
+			JSONObject result = (JSONObject) getRequest(url);
 			UserResult panel_1 = new UserResult(frame, url, result, detail.isSelected());
 			frame.getContentPane().add(panel_1, "user_result");
 			reset();
@@ -333,7 +336,7 @@ public class MainMenu extends JPanel {
 	}
 	
 	@SuppressWarnings("unchecked")
-	private JSONObject getRequest(String url) throws Exception {
+	private Object getRequest(String url) throws Exception {
 		String token ="b4565a9f29f8c0d8689dd1ea6357b9cd0d8932f9";
 		URL obj = new URL(url);
 		HttpURLConnection conn = (HttpURLConnection) obj.openConnection();
@@ -391,6 +394,7 @@ public class MainMenu extends JPanel {
 		FollowFilter.setSelected(false);
 		FollowCompare.setSelectedIndex(0);
 		FollowValue.setText("");
+		detail.setSelected(false);
 	}
 	
 	/**
