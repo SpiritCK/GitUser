@@ -7,7 +7,6 @@ import java.awt.Image;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
@@ -19,16 +18,12 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 
 import javax.imageio.ImageIO;
-import javax.swing.AbstractAction;
-import javax.swing.Action;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
-import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import javax.swing.KeyStroke;
 import javax.swing.SwingConstants;
 import javax.swing.border.LineBorder;
 
@@ -41,29 +36,28 @@ public class RepoResult extends JPanel {
 
 	final static int DEFAULT_PAGE_SIZE = 30;
 	private JFrame frame;
-	private String url;
 	private long curPage;
 	private long totalPage;
-	private long totalFound;
 	private JLabel lblPageOf;
-	private JLabel status;
+	private JSONObject user;
 
 	/**
 	 * Create the panel.
 	 */
-	public RepoResult(JFrame f, String u, JSONObject user) {
+	public RepoResult(JFrame f, JSONObject s) {
 		//totalFound = (long) page1.get("total_count");
 		//totalPage = (int) page1.get("page_number");
 		frame = f;
-		url = u;
 		curPage = 1;
+		user = s;
+		totalPage = ((long) user.get("public_repos")-1)/30 + 1;
 		setPreferredSize(new Dimension(500, 400));
 		
 		GridBagLayout gridBagLayout = new GridBagLayout();
 		gridBagLayout.columnWidths = new int[]{111, 118, 254, 0};
-		gridBagLayout.rowHeights = new int[]{83, 120, 145, 36, 0};
+		gridBagLayout.rowHeights = new int[]{83, 80, 145, 36, 0};
 		gridBagLayout.columnWeights = new double[]{1.0, 0.0, 0.0, Double.MIN_VALUE};
-		gridBagLayout.rowWeights = new double[]{0.0, 1.0, 1.0, 1.0, Double.MIN_VALUE};
+		gridBagLayout.rowWeights = new double[]{0.0, 0.0, 1.0, 0.0, Double.MIN_VALUE};
 		setLayout(gridBagLayout);
 		
 		JButton btnBack = new JButton("Back");
@@ -117,10 +111,10 @@ public class RepoResult extends JPanel {
 		add(panel, gbc_panel);
 		//panel.setBorder(new LineBorder(new Color(0, 0, 0)));
 		GridBagLayout gbl_panel = new GridBagLayout();
-		gbl_panel.columnWidths = new int[]{0, 300, 0};
+		gbl_panel.columnWidths = new int[]{0, 0, 0, 0};
 		gbl_panel.rowHeights = new int[]{0, 0, 0, 0, 0, 0};
-		gbl_panel.columnWeights = new double[]{0.0, 0.0, Double.MIN_VALUE};
-		gbl_panel.rowWeights = new double[]{0.0, 0.0, 0.0, 0.0, 0.0, Double.MIN_VALUE};
+		gbl_panel.columnWeights = new double[]{0.0, 1.0, 1.0, Double.MIN_VALUE};
+		gbl_panel.rowWeights = new double[]{1.0, 0.0, 0.0, 1.0, 0.0, Double.MIN_VALUE};
 		panel.setLayout(gbl_panel);
 		
 		JLabel pic;
@@ -136,7 +130,7 @@ public class RepoResult extends JPanel {
 		pic.setBorder(new LineBorder(new Color(0, 0, 0)));
 		pic.setPreferredSize(new Dimension(80, 80));
 		GridBagConstraints gbc_pic = new GridBagConstraints();
-		gbc_pic.gridheight = 7;
+		gbc_pic.gridheight = 4;
 		gbc_pic.anchor = GridBagConstraints.CENTER;
 		gbc_pic.insets = new Insets(0, 10, 0, 10);
 		gbc_pic.gridx = 0;
@@ -145,8 +139,9 @@ public class RepoResult extends JPanel {
 		
 		JLabel username = new JLabel(user.get("login").toString());
 		GridBagConstraints gbc_username = new GridBagConstraints();
-		gbc_username.anchor = GridBagConstraints.WEST;
-		gbc_username.insets = new Insets(8, 5, 0, 0);
+		gbc_username.gridwidth = 2;
+		gbc_username.anchor = GridBagConstraints.SOUTHWEST;
+		gbc_username.insets = new Insets(0, 5, 0, 0);
 		gbc_username.gridx = 1;
 		gbc_username.gridy = 0;
 		panel.add(username, gbc_username);
@@ -159,6 +154,7 @@ public class RepoResult extends JPanel {
 			nama = new JLabel(user.get("name").toString());
 		}
 		GridBagConstraints gbc_nama = new GridBagConstraints();
+		gbc_nama.gridwidth = 2;
 		gbc_nama.anchor = GridBagConstraints.WEST;
 		gbc_nama.insets = new Insets(5, 5, 0, 0);
 		gbc_nama.gridx = 1;
@@ -173,6 +169,7 @@ public class RepoResult extends JPanel {
 			email = new JLabel(user.get("email").toString());
 		}
 		GridBagConstraints gbc_email = new GridBagConstraints();
+		gbc_email.gridwidth = 2;
 		gbc_email.anchor = GridBagConstraints.WEST;
 		gbc_email.insets = new Insets(5, 5, 0, 0);
 		gbc_email.gridx = 1;
@@ -181,7 +178,7 @@ public class RepoResult extends JPanel {
 		
 		JLabel repo = new JLabel("Repositories : "+user.get("public_repos").toString());
 		GridBagConstraints gbc_repo = new GridBagConstraints();
-		gbc_repo.anchor = GridBagConstraints.WEST;
+		gbc_repo.anchor = GridBagConstraints.NORTHWEST;
 		gbc_repo.insets = new Insets(5, 5, 0, 0);
 		gbc_repo.gridx = 1;
 		gbc_repo.gridy = 3;
@@ -189,10 +186,10 @@ public class RepoResult extends JPanel {
 		
 		JLabel follower = new JLabel("Followers : "+user.get("followers").toString());
 		GridBagConstraints gbc_follower = new GridBagConstraints();
-		gbc_follower.anchor = GridBagConstraints.WEST;
-		gbc_follower.insets = new Insets(5, 5, 5, 0);
-		gbc_follower.gridx = 1;
-		gbc_follower.gridy = 4;
+		gbc_follower.anchor = GridBagConstraints.NORTHWEST;
+		gbc_follower.insets = new Insets(5, 5, 0, 0);
+		gbc_follower.gridx = 2;
+		gbc_follower.gridy = 3;
 		panel.add(follower, gbc_follower);
 		////////////////////////////////////////////////////////////////////////
 		
@@ -217,7 +214,13 @@ public class RepoResult extends JPanel {
 		gbl_content.rowWeights = new double[]{0.0, Double.MIN_VALUE};
 		content.setLayout(gbl_content);
 		
-		//showResult(page1, content);
+		JSONArray data;
+		try {
+			data = (JSONArray) getRequest(user.get("repos_url").toString());
+			showResult(data, content);
+		} catch (Exception e1) {
+			e1.printStackTrace();
+		}
 		////////////////////////////////////////////////////////////////////////
 		
 
@@ -373,48 +376,37 @@ public class RepoResult extends JPanel {
 	    return obj2;
 	}
 	
-	public void showResult(JSONObject data, JPanel content) {
-		long startCount = (curPage-1)*DEFAULT_PAGE_SIZE+1;
-		long finishCount = startCount + ((JSONArray) data.get("items")).size();
-		if ((boolean) data.get("incomplete_results")) {
-			status.setVisible(true);
-		}
-		else {
-
-			status.setVisible(false);
-		}
-		
-		for (long i = startCount; i < finishCount; i++) {
-			String link = (String) ((JSONObject) ((JSONArray) data.get("items")).get((int) (i-startCount))).get("url");
-			JSONObject obj;
-			try {
-				User user;
-				/*if (detail) {
-					obj = (JSONObject) getRequest(link);
-					user = new User(obj, detail);
+	public void showResult(JSONArray data, JPanel content) {
+		try {
+			long startCount = (curPage-1)*DEFAULT_PAGE_SIZE+1;
+			long finishCount = startCount + data.size();
+			
+			for (long i = startCount; i < finishCount; i++) {
+				try {
+					Repo repo = new Repo((JSONObject) data.get((int) (i-startCount)));
+					GridBagConstraints gbc_repo = new GridBagConstraints();
+					gbc_repo.insets = new Insets(5, 10, 5, 10);
+					gbc_repo.fill = GridBagConstraints.BOTH;
+					gbc_repo.gridx = 0;
+					gbc_repo.gridy = (int) (i-startCount);
+					content.add(repo, gbc_repo);
+					System.out.println(i+" : "+((JSONObject) data.get((int) (i-startCount))).get("name"));
+				} catch (Exception e) {
+					e.printStackTrace();
 				}
-				else {
-					user = new User((JSONObject) ((JSONArray) data.get("items")).get((int) (i-startCount)), detail);
-				}*/
-				GridBagConstraints gbc_user = new GridBagConstraints();
-				gbc_user.insets = new Insets(5, 10, 5, 10);
-				gbc_user.fill = GridBagConstraints.BOTH;
-				gbc_user.gridx = 0;
-				gbc_user.gridy = (int) (i-startCount);
-				//content.add(user, gbc_user);
-				System.out.println(i+" : "+((JSONObject) ((JSONArray) data.get("items")).get((int) (i-startCount))).get("login"));
-			} catch (Exception e) {
-				e.printStackTrace();
 			}
+			
+		} catch (Exception e1) {
+			e1.printStackTrace();
 		}
 	}
 	
 	public void refresh(JPanel content) {
 		content.removeAll();
 		lblPageOf.setText("Page "+curPage+" of "+totalPage);
-		JSONObject page;
+		JSONArray page;
 		try {
-			page = (JSONObject) getRequest(url+"&page="+curPage);
+			page = (JSONArray) getRequest(user.get("repos_url").toString()+"?page="+curPage);
 			showResult(page, content);
 		} catch (Exception e1) {
 			e1.printStackTrace();

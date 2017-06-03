@@ -27,11 +27,6 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 @SuppressWarnings("serial")
 public class User extends JPanel {
@@ -59,7 +54,7 @@ public class User extends JPanel {
 					System.out.println("Enter "+data.get("login")+"'s repository");
 					try {
 						JSONObject result = (JSONObject) getRequest((String) data.get("url"));
-						RepoResult panel_1 = new RepoResult(frame, (String) data.get("url"), result);
+						RepoResult panel_1 = new RepoResult(frame, result);
 						frame.getContentPane().add(panel_1, "repo_result");
 						CardLayout cardLayout = (CardLayout) frame.getContentPane().getLayout();
 						cardLayout.show(frame.getContentPane(), "repo_result");
@@ -161,7 +156,7 @@ public class User extends JPanel {
 			add(follower, gbc_follower);
 		}
 	}
-	@SuppressWarnings("unchecked")
+
 	private Object getRequest(String url) throws Exception {
 		String token ="b4565a9f29f8c0d8689dd1ea6357b9cd0d8932f9";
 		URL obj = new URL(url);
