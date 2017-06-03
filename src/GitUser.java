@@ -2,40 +2,13 @@ import java.awt.EventQueue;
 
 import javax.swing.JFrame;
 import java.awt.CardLayout;
-import javax.swing.JLabel;
-import javax.imageio.ImageIO;
-import javax.swing.BoxLayout;
-import java.awt.GridBagLayout;
-import java.awt.Image;
-import java.awt.BorderLayout;
-import java.awt.GridBagConstraints;
-import javax.swing.JTextField;
-import java.awt.Insets;
-import javax.swing.JComboBox;
-import javax.swing.SwingConstants;
-import javax.swing.DefaultComboBoxModel;
-import javax.swing.ImageIcon;
 import javax.swing.JCheckBox;
-import javax.swing.JButton;
-import javax.swing.JPanel;
-import java.awt.Label;
-import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.IOException;
 
 public class GitUser {
 
 	private JFrame frame;
-	private JTextField keyword;
-	private JTextField FollowValue;
-	private JTextField RepoValue;
-	JComboBox FollowCompare;
-	JComboBox RepoCompare;
-	JComboBox SearchBy;
 	JCheckBox FollowFilter;
 	JCheckBox RepoFilter;
-	private JPanel panel;
-	private JLabel logo;
 
 	/**
 	 * Launch the application.

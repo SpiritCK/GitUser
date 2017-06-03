@@ -14,14 +14,15 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 
 import javax.imageio.ImageIO;
+import javax.swing.AbstractAction;
+import javax.swing.Action;
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 import javax.swing.JButton;
+import javax.swing.JComponent;
 import javax.swing.JFrame;
-import javax.swing.JScrollBar;
-import javax.swing.border.BevelBorder;
 import javax.swing.border.LineBorder;
 
 import org.json.simple.JSONArray;
@@ -30,34 +31,38 @@ import org.json.simple.parser.JSONParser;
 
 import java.awt.CardLayout;
 import java.awt.Color;
-import javax.swing.JTextArea;
+import javax.swing.KeyStroke;
 import javax.swing.JScrollPane;
-import java.awt.GridLayout;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
 import java.awt.event.ActionEvent;
-import java.awt.Panel;
 
+@SuppressWarnings("serial")
 public class UserResult extends JPanel {
 	final static int DEFAULT_PAGE_SIZE = 30;
 	private JFrame frame;
 	private String url;
-	private int curPage;
+	private long curPage;
 	private long totalPage;
 	private long totalFound;
+	private JLabel lblPageOf;
+	private boolean detail;
+	private JLabel status;
 
 	/**
 	 * Create the panel.
 	 */
-	public UserResult(JFrame f, String u, JSONObject page1) {
+	public UserResult(JFrame f, String u, JSONObject page1, boolean d) {
 		totalFound = (long) page1.get("total_count");
-		totalPage = (totalFound - 1)/DEFAULT_PAGE_SIZE + 1;
+		totalPage = (int) page1.get("page_number");
 		frame = f;
 		url = u;
 		curPage = 1;
+		detail = d;
 		setPreferredSize(new Dimension(500, 400));
 		
 		GridBagLayout gridBagLayout = new GridBagLayout();
-		gridBagLayout.columnWidths = new int[]{111, 68, 304, 0};
+		gridBagLayout.columnWidths = new int[]{111, 118, 254, 0};
 		gridBagLayout.rowHeights = new int[]{83, 19, 246, 36, 0};
 		gridBagLayout.columnWeights = new double[]{1.0, 0.0, 0.0, Double.MIN_VALUE};
 		gridBagLayout.rowWeights = new double[]{0.0, 0.0, 1.0, 1.0, Double.MIN_VALUE};
@@ -105,11 +110,19 @@ public class UserResult extends JPanel {
 		JLabel TotalFound = new JLabel("Search result : "+totalFound+" match");
 		GridBagConstraints gbc_TotalFound = new GridBagConstraints();
 		gbc_TotalFound.anchor = GridBagConstraints.NORTHWEST;
-		gbc_TotalFound.gridwidth = 3;
+		gbc_TotalFound.gridwidth = 2;
 		gbc_TotalFound.insets = new Insets(5, 5, 5, 5);
 		gbc_TotalFound.gridx = 0;
 		gbc_TotalFound.gridy = 1;
 		add(TotalFound, gbc_TotalFound);
+		
+		status = new JLabel("Search took too long to finish");
+		GridBagConstraints gbc_status = new GridBagConstraints();
+		gbc_status.anchor = GridBagConstraints.NORTHEAST;
+		gbc_status.insets = new Insets(5, 5, 5, 5);
+		gbc_status.gridx = 2;
+		gbc_status.gridy = 1;
+		add(status, gbc_status);
 		
 		JScrollPane scrollPane = new JScrollPane();
 		scrollPane.setBorder(new LineBorder(new Color(0, 0, 0)));
@@ -124,6 +137,7 @@ public class UserResult extends JPanel {
 		/////////////////////////////Content////////////////////////////////////
 		JPanel content = new JPanel();
 		scrollPane.setViewportView(content);
+		scrollPane.getVerticalScrollBar().setUnitIncrement(20);
 		GridBagLayout gbl_content = new GridBagLayout();
 		gbl_content.columnWidths = new int[]{471, 0};
 		gbl_content.rowHeights = new int[]{100, 100, 100, 0};
@@ -131,22 +145,7 @@ public class UserResult extends JPanel {
 		gbl_content.rowWeights = new double[]{0.0, 0.0, 0.0, Double.MIN_VALUE};
 		content.setLayout(gbl_content);
 		
-		int startCount = (curPage-1)*30+1;
-		for (int i = startCount; i < (startCount + 29 < totalFound ? startCount+30 : totalFound+1); i++) {
-			String link = (String) ((JSONObject) ((JSONArray) page1.get("items")).get(i-startCount)).get("url");
-			JSONObject obj;
-			try {
-				obj = getRequest(link);
-				User user = new User(obj);
-				GridBagConstraints gbc_user = new GridBagConstraints();
-				gbc_user.insets = new Insets(5, 10, 5, 10);
-				gbc_user.gridx = 0;
-				gbc_user.gridy = i-startCount;
-				content.add(user, gbc_user);
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-		}
+		showResult(page1, content);
 		////////////////////////////////////////////////////////////////////////
 		
 
@@ -160,34 +159,122 @@ public class UserResult extends JPanel {
 		gbc_panel_1.gridy = 3;
 		add(panel_1, gbc_panel_1);
 		GridBagLayout gbl_panel_1 = new GridBagLayout();
-		gbl_panel_1.columnWidths = new int[]{194, 112, 194, 0};
+		gbl_panel_1.columnWidths = new int[]{0, 0, 112, 0, 0, 0};
 		gbl_panel_1.rowHeights = new int[]{0, 0};
-		gbl_panel_1.columnWeights = new double[]{0.0, 0.0, 0.0, Double.MIN_VALUE};
+		gbl_panel_1.columnWeights = new double[]{1.0, 0.0, 0.0, 0.0, 1.0, Double.MIN_VALUE};
 		gbl_panel_1.rowWeights = new double[]{0.0, Double.MIN_VALUE};
 		panel_1.setLayout(gbl_panel_1);
 		
-		JButton button = new JButton("<");
-		GridBagConstraints gbc_button = new GridBagConstraints();
-		gbc_button.anchor = GridBagConstraints.EAST;
-		gbc_button.insets = new Insets(0, 0, 0, 5);
-		gbc_button.gridx = 0;
-		gbc_button.gridy = 0;
-		panel_1.add(button, gbc_button);
+		JButton first = new JButton("<<");
+		GridBagConstraints gbc_first = new GridBagConstraints();
+		gbc_first.anchor = GridBagConstraints.EAST;
+		gbc_first.insets = new Insets(0, 2, 0, 2);
+		gbc_first.gridx = 0;
+		gbc_first.gridy = 0;
+		panel_1.add(first, gbc_first);
+		first.setVisible(false);
 		
-		JLabel lblPageOf = new JLabel("Page 1 of "+totalPage);
+		JButton prev = new JButton("<");
+		GridBagConstraints gbc_prev = new GridBagConstraints();
+		gbc_prev.anchor = GridBagConstraints.EAST;
+		gbc_prev.insets = new Insets(0, 2, 0, 2);
+		gbc_prev.gridx = 1;
+		gbc_prev.gridy = 0;
+		panel_1.add(prev, gbc_prev);
+		prev.setVisible(false);
+		
+		lblPageOf = new JLabel("Page 1 of "+totalPage);
 		GridBagConstraints gbc_lblPageOf = new GridBagConstraints();
-		gbc_lblPageOf.insets = new Insets(0, 0, 0, 5);
-		gbc_lblPageOf.gridx = 1;
+		gbc_lblPageOf.insets = new Insets(0, 2, 0, 2);
+		gbc_lblPageOf.gridx = 2;
 		gbc_lblPageOf.gridy = 0;
 		panel_1.add(lblPageOf, gbc_lblPageOf);
 		
-		JButton button_1 = new JButton(">");
-		GridBagConstraints gbc_button_1 = new GridBagConstraints();
-		gbc_button_1.anchor = GridBagConstraints.WEST;
-		gbc_button_1.gridx = 2;
-		gbc_button_1.gridy = 0;
-		panel_1.add(button_1, gbc_button_1);
+		JButton next = new JButton(">");
+		GridBagConstraints gbc_next = new GridBagConstraints();
+		gbc_next.insets = new Insets(0, 2, 0, 2);
+		gbc_next.anchor = GridBagConstraints.WEST;
+		gbc_next.gridx = 3;
+		gbc_next.gridy = 0;
+		panel_1.add(next, gbc_next);
+		
+		JButton last = new JButton(">>");
+		GridBagConstraints gbc_last = new GridBagConstraints();
+		gbc_last.insets = new Insets(0, 2, 0, 2);
+		gbc_last.anchor = GridBagConstraints.WEST;
+		gbc_last.gridx = 4;
+		gbc_last.gridy = 0;
+		panel_1.add(last, gbc_last);
+
+		first.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				curPage = 1;
+				last.setVisible(true);
+				next.setVisible(true);
+				first.setVisible(false);
+				prev.setVisible(false);
+				refresh(content);
+				scrollPane.getVerticalScrollBar().setValue(0);
+			}
+		});
+		last.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				curPage = totalPage;
+				last.setVisible(false);
+				next.setVisible(false);
+				first.setVisible(true);
+				prev.setVisible(true);
+				refresh(content);
+				scrollPane.getVerticalScrollBar().setValue(0);
+			}
+		});
+		prev.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				curPage--;
+				if (!next.isVisible()) {
+					next.setVisible(true);
+					last.setVisible(true);
+				}
+				if (curPage <= 1) {
+					prev.setVisible(false);
+					first.setVisible(false);
+				}
+				refresh(content);
+				scrollPane.getVerticalScrollBar().setValue(0);
+			}
+		});
+		next.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				curPage++;
+				if (!prev.isVisible()) {
+					prev.setVisible(true);
+					first.setVisible(true);
+				}
+				if (curPage >= totalPage) {
+					next.setVisible(false);
+					last.setVisible(false);
+				}
+				refresh(content);
+				scrollPane.getVerticalScrollBar().setValue(0);
+			}
+		});
+		if (totalPage <= 1) {
+			next.setVisible(false);
+			last.setVisible(false);
+		}
 		////////////////////////////////////////////////////////////////////////
+
+		Action refresh = new AbstractAction() {
+			private static final long serialVersionUID = 1L;
+			
+			@Override
+            public void actionPerformed(ActionEvent e) {
+				refresh(content);
+            }
+        };
+        int temp = JComponent.WHEN_IN_FOCUSED_WINDOW;
+        bindKeyStroke(temp, "refresh", KeyStroke.getKeyStroke(KeyEvent.VK_F5, 0), refresh);
+        bindKeyStroke(temp, "refresh", KeyStroke.getKeyStroke(KeyEvent.VK_R, 0), refresh);
 	}
 
 	private JSONObject getRequest(String url) throws Exception {
@@ -197,7 +284,7 @@ public class UserResult extends JPanel {
 		conn.setRequestProperty("Authorization", "token " + token);
 
 		conn.setRequestMethod("GET");
-		int responseCode = conn.getResponseCode();
+		//int responseCode = conn.getResponseCode();
 		
 		BufferedReader in = new BufferedReader(new InputStreamReader(conn.getInputStream()));
 		
@@ -215,4 +302,64 @@ public class UserResult extends JPanel {
 	    
 	    return obj3;
 	}
+	
+	public void showResult(JSONObject data, JPanel content) {
+		long startCount = (curPage-1)*DEFAULT_PAGE_SIZE+1;
+		long finishCount = startCount + ((JSONArray) data.get("items")).size();
+		if ((boolean) data.get("incomplete_results")) {
+			status.setVisible(true);
+		}
+		else {
+
+			status.setVisible(false);
+		}
+		
+		for (long i = startCount; i < finishCount; i++) {
+			String link = (String) ((JSONObject) ((JSONArray) data.get("items")).get((int) (i-startCount))).get("url");
+			JSONObject obj;
+			try {
+				User user;
+				if (detail) {
+					obj = getRequest(link);
+					user = new User(obj, detail);
+				}
+				else {
+					user = new User((JSONObject) ((JSONArray) data.get("items")).get((int) (i-startCount)), detail);
+				}
+				GridBagConstraints gbc_user = new GridBagConstraints();
+				gbc_user.insets = new Insets(5, 10, 5, 10);
+				gbc_user.gridx = 0;
+				gbc_user.gridy = (int) (i-startCount);
+				content.add(user, gbc_user);
+				System.out.println(i+" : "+((JSONObject) ((JSONArray) data.get("items")).get((int) (i-startCount))).get("login"));
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
+	}
+	
+	public void refresh(JPanel content) {
+		content.removeAll();
+		lblPageOf.setText("Page "+curPage+" of "+totalPage);
+		JSONObject page;
+		try {
+			page = getRequest(url+"&page="+curPage);
+			showResult(page, content);
+		} catch (Exception e1) {
+			e1.printStackTrace();
+		}
+		
+	}
+	
+	/**
+	 * mengikat tombol keyboard dengan aksi
+	 * @param condition kondisi utama
+	 * @param name nama aksi
+	 * @param keyStroke tombol yang ditekan
+	 * @param action aksi yang dijalankan
+	 */
+    protected void bindKeyStroke(int condition, String name, KeyStroke keyStroke, Action action) {
+    	getInputMap(condition).put(keyStroke, name);
+        getActionMap().put(name, action);
+    }
 }

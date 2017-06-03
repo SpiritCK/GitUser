@@ -13,7 +13,11 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.util.Base64;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.imageio.ImageIO;
 import javax.swing.AbstractAction;
@@ -33,35 +37,33 @@ import java.awt.GridBagConstraints;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.ActionEvent;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import javax.swing.GroupLayout;
-import javax.swing.GroupLayout.Alignment;
-import javax.swing.LayoutStyle.ComponentPlacement;
 
-import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 
+@SuppressWarnings("serial")
 public class MainMenu extends JPanel {
 	
-
 	private JTextField keyword;
 	private JTextField FollowValue;
 	private JTextField RepoValue;
+	@SuppressWarnings("rawtypes")
 	private JComboBox FollowCompare;
+	@SuppressWarnings("rawtypes")
 	private JComboBox RepoCompare;
+	@SuppressWarnings("rawtypes")
 	private JComboBox SearchBy;
 	private JCheckBox FollowFilter;
 	private JCheckBox RepoFilter;
-	private JPanel panel;
 	private JFrame frame;
+	private JCheckBox detail;
 
 	/**
 	 * Create the panel.
 	 */
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public MainMenu(JFrame f) {
 		addComponentListener(new ComponentAdapter() {
 			@Override
@@ -74,9 +76,9 @@ public class MainMenu extends JPanel {
 		
 		GridBagLayout gridBagLayout = new GridBagLayout();
 		gridBagLayout.columnWidths = new int[]{111, 68, 304, 0};
-		gridBagLayout.rowHeights = new int[]{83, 19, 24, 15, 24, 24, 33, 28, 0};
+		gridBagLayout.rowHeights = new int[]{83, 19, 24, 15, 24, 24, 0, 33, 28, 0};
 		gridBagLayout.columnWeights = new double[]{1.0, 0.0, 0.0, Double.MIN_VALUE};
-		gridBagLayout.rowWeights = new double[]{0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, Double.MIN_VALUE};
+		gridBagLayout.rowWeights = new double[]{0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, Double.MIN_VALUE};
 		setLayout(gridBagLayout);
 		
 		JLabel logo;
@@ -211,12 +213,22 @@ public class MainMenu extends JPanel {
 				Search();
 			}
 		});
+		
+		detail = new JCheckBox("Show detailed result (may cause the program to run slowly)");
+		GridBagConstraints gbc_detail = new GridBagConstraints();
+		gbc_detail.anchor = GridBagConstraints.NORTHWEST;
+		gbc_detail.gridwidth = 3;
+		gbc_detail.insets = new Insets(15, 5, 5, 5);
+		gbc_detail.gridx = 0;
+		gbc_detail.gridy = 6;
+		add(detail, gbc_detail);
+		
 		GridBagConstraints gbc_btnSearch = new GridBagConstraints();
 		gbc_btnSearch.anchor = GridBagConstraints.CENTER;
 		gbc_btnSearch.insets = new Insets(30, 5, 5, 5);
 		gbc_btnSearch.gridwidth = 3;
 		gbc_btnSearch.gridx = 0;
-		gbc_btnSearch.gridy = 6;
+		gbc_btnSearch.gridy = 7;
 		add(btnSearch, gbc_btnSearch);
 		
 		Action search = new AbstractAction() {
@@ -307,8 +319,9 @@ public class MainMenu extends JPanel {
 		}
 		url += "type=Users";
 		try {
+			System.out.println(url);
 			JSONObject result = getRequest(url);
-			UserResult panel_1 = new UserResult(frame, url, result);
+			UserResult panel_1 = new UserResult(frame, url, result, detail.isSelected());
 			frame.getContentPane().add(panel_1, "user_result");
 			reset();
 			CardLayout cardLayout = (CardLayout) frame.getContentPane().getLayout();
@@ -319,6 +332,7 @@ public class MainMenu extends JPanel {
 		}
 	}
 	
+	@SuppressWarnings("unchecked")
 	private JSONObject getRequest(String url) throws Exception {
 		String token ="b4565a9f29f8c0d8689dd1ea6357b9cd0d8932f9";
 		URL obj = new URL(url);
@@ -326,7 +340,7 @@ public class MainMenu extends JPanel {
 		conn.setRequestProperty("Authorization", "token " + token);
 
 		conn.setRequestMethod("GET");
-		int responseCode = conn.getResponseCode();
+		//int responseCode = conn.getResponseCode();
 		
 		BufferedReader in = new BufferedReader(new InputStreamReader(conn.getInputStream()));
 		
@@ -338,18 +352,33 @@ public class MainMenu extends JPanel {
 		in.close();
 		JSONParser parser = new JSONParser();
 		Object obj2 = parser.parse(response.toString());
-		System.out.println(obj2);
 		JSONObject obj3 = (JSONObject) obj2;
-	    System.out.println("Total count : "+obj3.get("total_count"));
-	    int total = Integer.parseInt(obj3.get("total_count").toString());
-	    if (total > 0) {
-	    	JSONArray array = (JSONArray) obj3.get("items");
-	    	System.out.println("Users :");
-	    	for (int i = 0; i < (total > 30 ? 30 : total); i++) {
-	    		System.out.println(i+": "+((JSONObject) array.get(i)).get("login"));
-	    	}
-	    }
+
+		Map<String, List<String>> map = conn.getHeaderFields();
+
+		System.out.println("Printing Response Header...\n");
+		int pageNumber = 1;
+
+		for (Map.Entry<String, List<String>> entry : map.entrySet()) {
+			System.out.println("Key : " + entry.getKey()
+	                           + " ,Value : " + entry.getValue());
+			if (entry.getKey() != null && entry.getKey().toString().equals("Link")) {
+				Pattern pattern = Pattern.compile("rel=\"next\"(?:.*)page=(.*?)>; rel=\"last\"");
+				Matcher matcher = pattern.matcher(entry.getValue().toString());
+
+		        List<String> listMatches = new ArrayList<String>();
+
+		        while(matcher.find())
+		        {
+		            listMatches.add(matcher.group(1));
+		        }
+
+		        pageNumber = Integer.parseInt(listMatches.get(0));
+			}
+		}
 	    
+		obj3.put("page_number", pageNumber);
+		System.out.println(obj3);
 	    return obj3;
 	}
 	
