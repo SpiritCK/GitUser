@@ -1,3 +1,4 @@
+package gituser;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
@@ -13,20 +14,60 @@ import org.json.simple.JSONObject;
 import javax.swing.JTextPane;
 import javax.swing.UIManager;
 
+/**
+ * Repository GUI
+ * @author Kevin Jonathan
+ */
 @SuppressWarnings("serial")
 public class Repo extends JPanel {
+	/**
+	 * Default font
+	 */
 	private static final Font DEFAULT_FONT;
-	private JSONObject data;
 	static {
         Font font = UIManager.getFont("Label.font");
         DEFAULT_FONT = (font != null) ? font: new Font("Tahoma", Font.PLAIN, 11);
     }
+	/**
+	 * Repository information
+	 */
+	private JSONObject data;
 
 	/**
 	 * Create the panel.
 	 */
 	public Repo(JSONObject obj) {
 		data = obj;
+		prepareGUI();
+	}
+	
+	/**
+	 * Shorten repository description
+	 * @param original Original description
+	 * @return Shortened description
+	 */
+	public static String refineDescription(String original) {
+		if (original.length() <= 110) {
+			return original;
+		}
+		else {
+			int i = 109;
+			while (original.charAt(i) != ' ') {
+				i--;
+			}
+			String result = new String();
+			for (int j = 0; j <= i; j++) {
+				result += original.charAt(j);
+			}
+			result += " ...";
+			return result;
+		}
+	}
+	
+	/**
+	 * Preparing GUI
+	 */
+	private void prepareGUI() {
 		setBorder(new LineBorder(new Color(0, 0, 0), 1, true));
 		setPreferredSize(new Dimension(450, 100));
 		GridBagLayout gridBagLayout = new GridBagLayout();
@@ -57,40 +98,21 @@ public class Repo extends JPanel {
 		gbc_repo.gridy = 1;
 		add(repo, gbc_repo);
 		
-		JTextPane txtpnDeskripsi = new JTextPane();
-		txtpnDeskripsi.setBackground(null);
-		txtpnDeskripsi.setEditable(false);
+		JTextPane description = new JTextPane();
+		description.setBackground(null);
+		description.setEditable(false);
 		if (data.get("description") != null) {
-			txtpnDeskripsi.setText(refineDescription(data.get("description").toString()));
+			description.setText(refineDescription(data.get("description").toString()));
 		}
 		else {
-			txtpnDeskripsi.setText("-");
+			description.setText("-");
 		}
-		//txtpnDeskripsi.setText(test);
-		GridBagConstraints gbc_txtpnDeskripsi = new GridBagConstraints();
-		gbc_txtpnDeskripsi.anchor = GridBagConstraints.NORTHWEST;
-		gbc_txtpnDeskripsi.insets = new Insets(2, 2, 0, 0);
-		gbc_txtpnDeskripsi.fill = GridBagConstraints.BOTH;
-		gbc_txtpnDeskripsi.gridx = 0;
-		gbc_txtpnDeskripsi.gridy = 2;
-		add(txtpnDeskripsi, gbc_txtpnDeskripsi);
-	}
-	
-	public String refineDescription(String original) {
-		if (original.length() <= 110) {
-			return original;
-		}
-		else {
-			int i = 109;
-			while (original.charAt(i) != ' ') {
-				i--;
-			}
-			String result = new String();
-			for (int j = 0; j <= i; j++) {
-				result += original.charAt(j);
-			}
-			result += " ...";
-			return result;
-		}
+		GridBagConstraints gbc_description = new GridBagConstraints();
+		gbc_description.anchor = GridBagConstraints.NORTHWEST;
+		gbc_description.insets = new Insets(2, 2, 0, 0);
+		gbc_description.fill = GridBagConstraints.BOTH;
+		gbc_description.gridx = 0;
+		gbc_description.gridy = 2;
+		add(description, gbc_description);
 	}
 }

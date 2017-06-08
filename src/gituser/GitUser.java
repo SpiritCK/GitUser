@@ -1,14 +1,18 @@
+package gituser;
 import java.awt.EventQueue;
 
 import javax.swing.JFrame;
 import java.awt.CardLayout;
-import javax.swing.JCheckBox;
-
+/**
+ * Main program
+ * @author Kevin Jonathan
+ * @version 1.1
+ */
 public class GitUser {
-
+	/**
+	 * The frame
+	 */
 	private JFrame frame;
-	JCheckBox FollowFilter;
-	JCheckBox RepoFilter;
 
 	/**
 	 * Launch the application.
@@ -37,7 +41,7 @@ public class GitUser {
 	 * Initialize the contents of the frame.
 	 */
 	private void initialize() {
-		frame = new JFrame();
+		frame = new JFrame("GitUser v1.1");
 		frame.setBounds(100, 100, 500, 400);
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frame.getContentPane().setLayout(new CardLayout(0, 0));

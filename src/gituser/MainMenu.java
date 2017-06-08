@@ -1,3 +1,4 @@
+package gituser;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.KeyStroke;
@@ -7,17 +8,8 @@ import java.awt.GridBagLayout;
 import java.awt.Image;
 import java.awt.Insets;
 import java.awt.image.BufferedImage;
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import javax.imageio.ImageIO;
 import javax.swing.AbstractAction;
@@ -39,39 +31,196 @@ import java.awt.event.KeyEvent;
 import java.awt.event.ActionEvent;
 
 import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 
+/**
+ * Main menu GUI
+ * @author Kevin Jonathan
+ */
 @SuppressWarnings("serial")
 public class MainMenu extends JPanel {
-	
-	private JTextField keyword;
-	private JTextField FollowValue;
-	private JTextField RepoValue;
-	@SuppressWarnings("rawtypes")
-	private JComboBox FollowCompare;
-	@SuppressWarnings("rawtypes")
-	private JComboBox RepoCompare;
-	@SuppressWarnings("rawtypes")
-	private JComboBox SearchBy;
-	private JCheckBox FollowFilter;
-	private JCheckBox RepoFilter;
+
+	/**
+	 * The frame
+	 */
 	private JFrame frame;
+	/**
+	 * Search keyword
+	 */
+	JTextField keyword;
+	/**
+	 * Number of follower
+	 */
+	JTextField FollowValue;
+	/**
+	 * Number of repository
+	 */
+	JTextField RepoValue;
+	/**
+	 * Comparison type for follower
+	 */
+	@SuppressWarnings("rawtypes")
+	JComboBox FollowCompare;
+	/**
+	 * Comparison type for repository
+	 */
+	@SuppressWarnings("rawtypes")
+	JComboBox RepoCompare;
+	/**
+	 * Search base
+	 */
+	@SuppressWarnings("rawtypes")
+	JComboBox SearchBy;
+	/**
+	 * Follower filter on/off
+	 */
+	JCheckBox FollowFilter;
+	/**
+	 * Repository filter on/off
+	 */
+	JCheckBox RepoFilter;
+	/**
+	 * sho detailed result on/off
+	 */
 	private JCheckBox detail;
 
 	/**
 	 * Create the panel.
 	 */
-	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public MainMenu(JFrame f) {
+		frame = f;
+		prepareGUI();
+	}
+	
+	/**
+	 * Generate search query
+	 * @return query
+	 */
+	public String generateQuery() {
+		String query = new String("https://api.github.com/search/users?q=");
+		boolean clear = true;
+		if (!keyword.getText().isEmpty()) {
+			clear = false;
+			for (int i = 0; i < keyword.getText().length(); i++) {
+				if (keyword.getText().charAt(i) == ' ') {
+					query += "+";
+				}
+				else {
+					query += keyword.getText().charAt(i);
+				}
+			}
+			
+			query += "+in%3A";
+			if (SearchBy.getSelectedIndex() == 0) {
+				query += "login";
+			}
+			else if (SearchBy.getSelectedIndex() == 1) {
+				query += "fullname";
+			}
+			else {
+				query += "email";
+			}
+		}
+		
+		if (RepoFilter.isSelected() && !RepoValue.getText().isEmpty()) {
+			if (!clear) {
+				query += "+";
+			}
+			else {
+				clear = false;
+			}
+			if (RepoCompare.getSelectedIndex() == 0) {
+				query += "repos%3A<" + RepoValue.getText();
+			}
+			else if (RepoCompare.getSelectedIndex() == 1) {
+				query += "repos%3A<%3D" + RepoValue.getText();
+			}
+			else if (RepoCompare.getSelectedIndex() == 2) {
+				query += "repos%3A>" + RepoValue.getText();
+			}
+			else {
+				query += "repos%3A>%3D" + RepoValue.getText();
+			}
+		}
+		
+		if (FollowFilter.isSelected() && !FollowValue.getText().isEmpty()) {
+			if (!clear) {
+				query += "+";
+			}
+			else {
+				clear = false;
+			}
+			if (FollowCompare.getSelectedIndex() == 0) {
+				query += "followers%3A<" + FollowValue.getText();
+			}
+			else if (FollowCompare.getSelectedIndex() == 1) {
+				query += "followers%3A<%3D" + FollowValue.getText();
+			}
+			else if (FollowCompare.getSelectedIndex() == 2) {
+				query += "followers%3A>" + FollowValue.getText();
+			}
+			else {
+				query += "followers%3A>%3D" + FollowValue.getText();
+			}
+		}
+
+		if (!clear) {
+			query += "&";
+		}
+		else {
+			clear = false;
+		}
+		query += "type=Users";
+		return query;
+	}
+	
+	/**
+	 * Searching for user
+	 */
+	public void Search() {
+		String url = generateQuery();
+		try {
+			System.out.println(url);
+			HTTPSender http = new HTTPSender();
+			JSONObject result = (JSONObject) http.getRequest(url);
+			UserResult panel_1 = new UserResult(frame, url, result, detail.isSelected());
+			frame.getContentPane().add(panel_1, "user_result");
+			reset();
+			CardLayout cardLayout = (CardLayout) frame.getContentPane().getLayout();
+			cardLayout.show(frame.getContentPane(), "user_result");
+		} catch (Exception e) {
+			System.out.println("request error");
+			e.printStackTrace();
+		}
+	}
+	
+	/**
+	 * reset GUI
+	 */
+	public void reset() {
+		keyword.setText("");
+		SearchBy.setSelectedIndex(0);
+		RepoFilter.setSelected(false);
+		RepoCompare.setSelectedIndex(0);
+		RepoValue.setText("");
+		FollowFilter.setSelected(false);
+		FollowCompare.setSelectedIndex(0);
+		FollowValue.setText("");
+		detail.setSelected(false);
+	}
+
+	/**
+	 * Preparing GUI
+	 */
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	private void prepareGUI() {
 		addComponentListener(new ComponentAdapter() {
 			@Override
 			public void componentShown(ComponentEvent arg0) {
 				keyword.requestFocus();
 			}
 		});
-		frame = f;
 		setPreferredSize(new Dimension(500, 400));
 		
 		GridBagLayout gridBagLayout = new GridBagLayout();
@@ -90,12 +239,6 @@ public class MainMenu extends JPanel {
 			logo = new JLabel("No image");
 		}
 		logo.setHorizontalAlignment(SwingConstants.RIGHT);
-		/*logo.addMouseListener(new MouseAdapter() {
-			@Override
-			public void mouseClicked(MouseEvent arg0) {
-				System.out.println("Back to main menu\n");
-			}
-		});*/
 		GridBagConstraints gbc_logo = new GridBagConstraints();
 		gbc_logo.fill = GridBagConstraints.BOTH;
 		gbc_logo.insets = new Insets(5, 5, 5, 5);
@@ -246,165 +389,14 @@ public class MainMenu extends JPanel {
         bindKeyStroke(temp, "inc.xp", KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0), search);
 	}
 	
-	public void Search() {
-		String url = new String("https://api.github.com/search/users?q=");
-		boolean clear = true;
-		if (!keyword.getText().isEmpty()) {
-			clear = false;
-			for (int i = 0; i < keyword.getText().length(); i++) {
-				if (keyword.getText().charAt(i) == ' ') {
-					url += "+";
-				}
-				else {
-					url += keyword.getText().charAt(i);
-				}
-			}
-			
-			url += "+in%3A";
-			if (SearchBy.getSelectedIndex() == 0) {
-				url += "login";
-			}
-			else if (SearchBy.getSelectedIndex() == 1) {
-				url += "fullname";
-			}
-			else {
-				url += "email";
-			}
-		}
-		
-		if (RepoFilter.isSelected() && !RepoValue.getText().isEmpty()) {
-			if (!clear) {
-				url += "+";
-			}
-			else {
-				clear = false;
-			}
-			if (RepoCompare.getSelectedIndex() == 0) {
-				url += "repos%3A<" + RepoValue.getText();
-			}
-			else if (RepoCompare.getSelectedIndex() == 1) {
-				url += "repos%3A<%3D" + RepoValue.getText();
-			}
-			else if (RepoCompare.getSelectedIndex() == 2) {
-				url += "repos%3A>" + RepoValue.getText();
-			}
-			else {
-				url += "repos%3A>%3D" + RepoValue.getText();
-			}
-		}
-		
-		if (FollowFilter.isSelected() && !FollowValue.getText().isEmpty()) {
-			if (!clear) {
-				url += "+";
-			}
-			else {
-				clear = false;
-			}
-			if (FollowCompare.getSelectedIndex() == 0) {
-				url += "followers%3A<" + FollowValue.getText();
-			}
-			else if (FollowCompare.getSelectedIndex() == 1) {
-				url += "followers%3A<%3D" + FollowValue.getText();
-			}
-			else if (FollowCompare.getSelectedIndex() == 2) {
-				url += "followers%3A>" + FollowValue.getText();
-			}
-			else {
-				url += "followers%3A>%3D" + FollowValue.getText();
-			}
-		}
-
-		if (!clear) {
-			url += "&";
-		}
-		else {
-			clear = false;
-		}
-		url += "type=Users";
-		try {
-			System.out.println(url);
-			JSONObject result = (JSONObject) getRequest(url);
-			UserResult panel_1 = new UserResult(frame, url, result, detail.isSelected());
-			frame.getContentPane().add(panel_1, "user_result");
-			reset();
-			CardLayout cardLayout = (CardLayout) frame.getContentPane().getLayout();
-			cardLayout.show(frame.getContentPane(), "user_result");
-		} catch (Exception e) {
-			System.out.println("request error");
-			e.printStackTrace();
-		}
-	}
-	
-	@SuppressWarnings("unchecked")
-	private Object getRequest(String url) throws Exception {
-		String token ="b4565a9f29f8c0d8689dd1ea6357b9cd0d8932f9";
-		URL obj = new URL(url);
-		HttpURLConnection conn = (HttpURLConnection) obj.openConnection();
-		conn.setRequestProperty("Authorization", "token " + token);
-
-		conn.setRequestMethod("GET");
-		//int responseCode = conn.getResponseCode();
-		
-		BufferedReader in = new BufferedReader(new InputStreamReader(conn.getInputStream()));
-		
-		String inputLine;
-		StringBuffer response = new StringBuffer();
-		
-		while ((inputLine = in.readLine()) != null) { response.append(inputLine); }
-		
-		in.close();
-		JSONParser parser = new JSONParser();
-		Object obj2 = parser.parse(response.toString());
-		JSONObject obj3 = (JSONObject) obj2;
-
-		Map<String, List<String>> map = conn.getHeaderFields();
-
-		System.out.println("Printing Response Header...\n");
-		int pageNumber = 1;
-
-		for (Map.Entry<String, List<String>> entry : map.entrySet()) {
-			System.out.println("Key : " + entry.getKey()
-	                           + " ,Value : " + entry.getValue());
-			if (entry.getKey() != null && entry.getKey().toString().equals("Link")) {
-				Pattern pattern = Pattern.compile("rel=\"next\"(?:.*)page=(.*?)>; rel=\"last\"");
-				Matcher matcher = pattern.matcher(entry.getValue().toString());
-
-		        List<String> listMatches = new ArrayList<String>();
-
-		        while(matcher.find())
-		        {
-		            listMatches.add(matcher.group(1));
-		        }
-
-		        pageNumber = Integer.parseInt(listMatches.get(0));
-			}
-		}
-	    
-		obj3.put("page_number", pageNumber);
-		System.out.println(obj3);
-	    return obj3;
-	}
-	
-	public void reset() {
-		keyword.setText("");
-		SearchBy.setSelectedIndex(0);
-		RepoFilter.setSelected(false);
-		RepoCompare.setSelectedIndex(0);
-		RepoValue.setText("");
-		FollowFilter.setSelected(false);
-		FollowCompare.setSelectedIndex(0);
-		FollowValue.setText("");
-		detail.setSelected(false);
-	}
-	
 	/**
-	 * mengikat tombol keyboard dengan aksi
-	 * @param condition kondisi utama
-	 * @param name nama aksi
-	 * @param keyStroke tombol yang ditekan
-	 * @param action aksi yang dijalankan
+	 * Binds keyboard button
+	 * @param condition main condition
+	 * @param name action name
+	 * @param keyStroke pressed key
+	 * @param action executed action
 	 */
-    protected void bindKeyStroke(int condition, String name, KeyStroke keyStroke, Action action) {
+    private void bindKeyStroke(int condition, String name, KeyStroke keyStroke, Action action) {
     	getInputMap(condition).put(keyStroke, name);
         getActionMap().put(name, action);
     }

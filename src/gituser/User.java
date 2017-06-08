@@ -1,9 +1,9 @@
+package gituser;
 import java.awt.Dimension;
 
 import javax.swing.JPanel;
 
 import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
 
 import java.awt.GridBagLayout;
 import java.awt.Image;
@@ -22,23 +22,45 @@ import javax.swing.border.BevelBorder;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
 import java.net.URL;
 
+/**
+ * User GUI
+ * @author Kevin Jonathan
+ */
 @SuppressWarnings("serial")
 public class User extends JPanel {
+	/**
+	 * The frame
+	 */
+	private JFrame frame;
+	/**
+	 * User information
+	 */
 	private JSONObject data;
+	/**
+	 * Detailed result on/off
+	 */
 	private boolean detail;
 
 	/**
-	 * Create the panel.
+	 * Create the panel
+	 * @param f The frame
+	 * @param obj User data
+	 * @param d Detailed information
 	 */
-	public User(JFrame frame, JSONObject obj, boolean d) {
+	public User(JFrame f, JSONObject obj, boolean d) {
+		frame = f;
 		detail = d;
 		data = obj;
+		prepareGUI();
+	}
+	
+	/**
+	 * Preparing GUI
+	 */
+	private void prepareGUI() {
 		addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseEntered(MouseEvent arg0) {
@@ -53,7 +75,8 @@ public class User extends JPanel {
 				try {
 					System.out.println("Enter "+data.get("login")+"'s repository");
 					try {
-						JSONObject result = (JSONObject) getRequest((String) data.get("url"));
+						HTTPSender http = new HTTPSender();
+						JSONObject result = (JSONObject) http.getRequest((String) data.get("url"));
 						RepoResult panel_1 = new RepoResult(frame, result);
 						frame.getContentPane().add(panel_1, "repo_result");
 						CardLayout cardLayout = (CardLayout) frame.getContentPane().getLayout();
@@ -155,58 +178,6 @@ public class User extends JPanel {
 			gbc_follower.gridy = 4;
 			add(follower, gbc_follower);
 		}
-	}
-
-	private Object getRequest(String url) throws Exception {
-		String token ="b4565a9f29f8c0d8689dd1ea6357b9cd0d8932f9";
-		URL obj = new URL(url);
-		HttpURLConnection conn = (HttpURLConnection) obj.openConnection();
-		conn.setRequestProperty("Authorization", "token " + token);
-
-		conn.setRequestMethod("GET");
-		//int responseCode = conn.getResponseCode();
-		
-		BufferedReader in = new BufferedReader(new InputStreamReader(conn.getInputStream()));
-		
-		String inputLine;
-		StringBuffer response = new StringBuffer();
-		
-		while ((inputLine = in.readLine()) != null) { response.append(inputLine); }
-		
-		in.close();
-		JSONParser parser = new JSONParser();
-		Object obj2 = parser.parse(response.toString());
-		
-		return obj2;
-		/*JSONObject obj3 = new JSONObject();
-		obj3.put("items", obj2);
-
-		Map<String, List<String>> map = conn.getHeaderFields();
-
-		System.out.println("Printing Response Header...\n");
-		int pageNumber = 1;
-
-		for (Map.Entry<String, List<String>> entry : map.entrySet()) {
-			System.out.println("Key : " + entry.getKey()
-	                           + " ,Value : " + entry.getValue());
-			if (entry.getKey() != null && entry.getKey().toString().equals("Link")) {
-				Pattern pattern = Pattern.compile("rel=\"next\"(?:.*)page=(.*?)>; rel=\"last\"");
-				Matcher matcher = pattern.matcher(entry.getValue().toString());
-
-		        List<String> listMatches = new ArrayList<String>();
-
-		        while(matcher.find())
-		        {
-		            listMatches.add(matcher.group(1));
-		        }
-
-		        pageNumber = Integer.parseInt(listMatches.get(0));
-			}
-		}
-	    
-		obj3.put("page_number", pageNumber);
-		System.out.println(obj3);
-	    return obj3;*/
 	}
 
 }
