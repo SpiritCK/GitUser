@@ -42,7 +42,7 @@ public class GitUser {
 	 */
 	private void initialize() {
 		frame = new JFrame("GitUser v1.1");
-		frame.setBounds(100, 100, 500, 400);
+		frame.setBounds(100, 100, 500, 500);
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frame.getContentPane().setLayout(new CardLayout(0, 0));
 		

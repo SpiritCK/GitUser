@@ -68,8 +68,8 @@ public class Repo extends JPanel {
 	 * Preparing GUI
 	 */
 	private void prepareGUI() {
-		setBorder(new LineBorder(new Color(0, 0, 0), 1, true));
-		setPreferredSize(new Dimension(450, 100));
+		setBorder(new LineBorder(new Color(0, 0, 0)));
+		setPreferredSize(new Dimension(450, 104));
 		GridBagLayout gridBagLayout = new GridBagLayout();
 		gridBagLayout.columnWidths = new int[]{0, 0};
 		gridBagLayout.rowHeights = new int[]{0, 0, 0, 0};

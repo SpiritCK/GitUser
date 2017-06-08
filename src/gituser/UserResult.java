@@ -1,5 +1,6 @@
 package gituser;
 import java.awt.Dimension;
+import java.awt.Graphics;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Image;
@@ -39,15 +40,46 @@ import java.awt.event.ActionEvent;
  */
 @SuppressWarnings("serial")
 public class UserResult extends JPanel {
+	/**
+	 * Default page size
+	 */
 	final static int DEFAULT_PAGE_SIZE = 30;
+	/**
+	 * The frame
+	 */
 	private JFrame frame;
+	/**
+	 * Original link
+	 */
 	private String url;
+	/**
+	 * Current page
+	 */
 	private long curPage;
+	/**
+	 * Total page
+	 */
 	private long totalPage;
+	/**
+	 * Total match found
+	 */
 	private long totalFound;
+	/**
+	 * Page position
+	 */
 	private JLabel lblPageOf;
+	/**
+	 * Detailed result on/off
+	 */
 	private boolean detail;
+	/**
+	 * search tatus
+	 */
 	private JLabel status;
+	/**
+	 * Scroll pane
+	 */
+	private JScrollPane scrollPane;
 
 	/**
 	 * Create the panel.
@@ -59,13 +91,86 @@ public class UserResult extends JPanel {
 		url = u;
 		curPage = 1;
 		detail = d;
-		setPreferredSize(new Dimension(500, 400));
+		setPreferredSize(new Dimension(500, 500));
 		
+		prepareGUI(page1);
+	}
+	
+	/**
+	 * Show search result
+	 * @param data List of matching user
+	 * @param content Panel
+	 */
+	public void showResult(JSONObject data, JPanel content) {
+		long startCount = (curPage-1)*DEFAULT_PAGE_SIZE+1;
+		long finishCount = startCount + ((JSONArray) ((JSONObject) data.get("item")).get("items")).size();
+		if ((boolean) ((JSONObject) data.get("item")).get("incomplete_results")) {
+			status.setVisible(true);
+		}
+		else {
+
+			status.setVisible(false);
+		}
+		
+		for (long i = startCount; i < finishCount; i++) {
+			String link = (String) ((JSONObject) ((JSONArray) ((JSONObject) data.get("item")).get("items")).get((int) (i-startCount))).get("url");
+			JSONObject obj;
+			try {
+				User user;
+				if (detail) {
+					HTTPSender http = new HTTPSender();
+					obj = (JSONObject) http.getRequest(link);
+					user = new User(frame, (JSONObject) obj.get("item"), detail);
+				}
+				else {
+					user = new User(frame, (JSONObject) ((JSONArray) ((JSONObject) data.get("item")).get("items")).get((int) (i-startCount)), detail);
+				}
+				GridBagConstraints gbc_user = new GridBagConstraints();
+				if (i == startCount) {
+					gbc_user.insets = new Insets(10, 10, 10, 10);
+				}
+				else {
+					gbc_user.insets = new Insets(0, 10, 10, 10);
+				}
+				gbc_user.fill = GridBagConstraints.BOTH;
+				gbc_user.gridx = 0;
+				gbc_user.gridy = (int) (i-startCount);
+				content.add(user, gbc_user);
+				System.out.println(i+" : "+((JSONObject) ((JSONArray) ((JSONObject) data.get("item")).get("items")).get((int) (i-startCount))).get("login"));
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
+	}
+	
+	/**
+	 * refresh content view
+	 * @param content Panel
+	 */
+	public void refresh(JPanel content) {
+		content.removeAll();
+		lblPageOf.setText("Page "+curPage+" of "+totalPage);
+		JSONObject page;
+		try {
+			HTTPSender http = new HTTPSender();
+			page = (JSONObject) http.getRequest(url+"&page="+curPage);
+			showResult(page, content);
+		} catch (Exception e1) {
+			e1.printStackTrace();
+		}
+		
+	}
+	
+	/**
+	 * Preparing GUI
+	 * @param page1 First page result
+	 */
+	private void prepareGUI(JSONObject page1) {
 		GridBagLayout gridBagLayout = new GridBagLayout();
 		gridBagLayout.columnWidths = new int[]{111, 118, 254, 0};
 		gridBagLayout.rowHeights = new int[]{83, 19, 246, 36, 0};
 		gridBagLayout.columnWeights = new double[]{1.0, 0.0, 0.0, Double.MIN_VALUE};
-		gridBagLayout.rowWeights = new double[]{0.0, 0.0, 1.0, 1.0, Double.MIN_VALUE};
+		gridBagLayout.rowWeights = new double[]{0.0, 0.0, 1.0, 0.0, Double.MIN_VALUE};
 		setLayout(gridBagLayout);
 		
 		JButton btnBack = new JButton("Back");
@@ -124,7 +229,8 @@ public class UserResult extends JPanel {
 		gbc_status.gridy = 1;
 		add(status, gbc_status);
 		
-		JScrollPane scrollPane = new JScrollPane();
+		/////////////////////////////Content////////////////////////////////////
+		scrollPane = new JScrollPane();
 		scrollPane.setBorder(new LineBorder(new Color(0, 0, 0)));
 		GridBagConstraints gbc_scrollPane = new GridBagConstraints();
 		gbc_scrollPane.gridwidth = 3;
@@ -134,7 +240,6 @@ public class UserResult extends JPanel {
 		gbc_scrollPane.gridy = 2;
 		add(scrollPane, gbc_scrollPane);
 		
-		/////////////////////////////Content////////////////////////////////////
 		JPanel content = new JPanel();
 		scrollPane.setViewportView(content);
 		scrollPane.getVerticalScrollBar().setUnitIncrement(20);
@@ -214,7 +319,7 @@ public class UserResult extends JPanel {
 				first.setVisible(false);
 				prev.setVisible(false);
 				refresh(content);
-				scrollPane.getVerticalScrollBar().setValue(0);
+				repaint();
 			}
 		});
 		last.addActionListener(new ActionListener() {
@@ -225,7 +330,7 @@ public class UserResult extends JPanel {
 				first.setVisible(true);
 				prev.setVisible(true);
 				refresh(content);
-				scrollPane.getVerticalScrollBar().setValue(0);
+				repaint();
 			}
 		});
 		prev.addActionListener(new ActionListener() {
@@ -240,7 +345,7 @@ public class UserResult extends JPanel {
 					first.setVisible(false);
 				}
 				refresh(content);
-				scrollPane.getVerticalScrollBar().setValue(0);
+				repaint();
 			}
 		});
 		next.addActionListener(new ActionListener() {
@@ -255,7 +360,7 @@ public class UserResult extends JPanel {
 					last.setVisible(false);
 				}
 				refresh(content);
-				scrollPane.getVerticalScrollBar().setValue(0);
+				repaint();
 			}
 		});
 		if (totalPage <= 1) {
@@ -277,57 +382,6 @@ public class UserResult extends JPanel {
         bindKeyStroke(temp, "refresh", KeyStroke.getKeyStroke(KeyEvent.VK_R, 0), refresh);
 	}
 	
-	public void showResult(JSONObject data, JPanel content) {
-		long startCount = (curPage-1)*DEFAULT_PAGE_SIZE+1;
-		long finishCount = startCount + ((JSONArray) ((JSONObject) data.get("item")).get("items")).size();
-		if ((boolean) ((JSONObject) data.get("item")).get("incomplete_results")) {
-			status.setVisible(true);
-		}
-		else {
-
-			status.setVisible(false);
-		}
-		
-		for (long i = startCount; i < finishCount; i++) {
-			String link = (String) ((JSONObject) ((JSONArray) ((JSONObject) data.get("item")).get("items")).get((int) (i-startCount))).get("url");
-			JSONObject obj;
-			try {
-				User user;
-				if (detail) {
-					HTTPSender http = new HTTPSender();
-					obj = (JSONObject) http.getRequest(link);
-					user = new User(frame, (JSONObject) obj.get("item"), detail);
-				}
-				else {
-					user = new User(frame, (JSONObject) ((JSONArray) ((JSONObject) data.get("item")).get("items")).get((int) (i-startCount)), detail);
-				}
-				GridBagConstraints gbc_user = new GridBagConstraints();
-				gbc_user.insets = new Insets(5, 10, 5, 10);
-				gbc_user.fill = GridBagConstraints.BOTH;
-				gbc_user.gridx = 0;
-				gbc_user.gridy = (int) (i-startCount);
-				content.add(user, gbc_user);
-				System.out.println(i+" : "+((JSONObject) ((JSONArray) ((JSONObject) data.get("item")).get("items")).get((int) (i-startCount))).get("login"));
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-		}
-	}
-	
-	public void refresh(JPanel content) {
-		content.removeAll();
-		lblPageOf.setText("Page "+curPage+" of "+totalPage);
-		JSONObject page;
-		try {
-			HTTPSender http = new HTTPSender();
-			page = (JSONObject) http.getRequest(url+"&page="+curPage);
-			showResult(page, content);
-		} catch (Exception e1) {
-			e1.printStackTrace();
-		}
-		
-	}
-	
 	/**
 	 * Binds keyboard button
 	 * @param condition main condition
@@ -339,4 +393,13 @@ public class UserResult extends JPanel {
     	getInputMap(condition).put(keyStroke, name);
         getActionMap().put(name, action);
     }
+	
+	/**
+	 * Overriding paint component
+	 */
+	@Override
+	public void paintComponent(Graphics g) {
+		super.paintComponent(g);
+		scrollPane.getVerticalScrollBar().setValue(0);
+	}
 }

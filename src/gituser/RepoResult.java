@@ -2,6 +2,7 @@ package gituser;
 import java.awt.CardLayout;
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Graphics;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Image;
@@ -59,6 +60,10 @@ public class RepoResult extends JPanel {
 	 * User information
 	 */
 	private JSONObject user;
+	/**
+	 * Scroll pane
+	 */
+	private JScrollPane scrollPane;
 
 	/**
 	 * Create the panel.
@@ -69,15 +74,15 @@ public class RepoResult extends JPanel {
 		user = (JSONObject) s.get("item");
 		totalPage = ((long) user.get("public_repos")-1)/30+1;
 		System.out.println(totalPage);
-		setPreferredSize(new Dimension(500, 400));
+		setPreferredSize(new Dimension(500, 500));
 		
 		prepareGUI();
 	}
 	
 	/**
-	 * Show user search result
-	 * @param data List of users
-	 * @param content Panel for showing search result
+	 * Show user's repository
+	 * @param data List of repository
+	 * @param content Panel for showing result
 	 */
 	public void showResult(JSONArray data, JPanel content) {
 		try {
@@ -88,7 +93,12 @@ public class RepoResult extends JPanel {
 				try {
 					Repo repo = new Repo((JSONObject) data.get((int) (i-startCount)));
 					GridBagConstraints gbc_repo = new GridBagConstraints();
-					gbc_repo.insets = new Insets(5, 10, 5, 10);
+					if (i == startCount) {
+						gbc_repo.insets = new Insets(10, 10, 10, 10);
+					}
+					else {
+						gbc_repo.insets = new Insets(0, 10, 10, 10);
+					}
 					gbc_repo.fill = GridBagConstraints.BOTH;
 					gbc_repo.gridx = 0;
 					gbc_repo.gridy = (int) (i-startCount);
@@ -273,7 +283,7 @@ public class RepoResult extends JPanel {
 		////////////////////////////////////////////////////////////////////////
 
 		/////////////////////////////Content////////////////////////////////////
-		JScrollPane scrollPane = new JScrollPane();
+		scrollPane = new JScrollPane();
 		scrollPane.setBorder(new LineBorder(new Color(0, 0, 0)));
 		GridBagConstraints gbc_scrollPane = new GridBagConstraints();
 		gbc_scrollPane.gridwidth = 3;
@@ -369,7 +379,7 @@ public class RepoResult extends JPanel {
 				first.setVisible(false);
 				prev.setVisible(false);
 				refresh(content);
-				scrollPane.getVerticalScrollBar().setValue(0);
+				repaint();
 			}
 		});
 		last.addActionListener(new ActionListener() {
@@ -380,7 +390,7 @@ public class RepoResult extends JPanel {
 				first.setVisible(true);
 				prev.setVisible(true);
 				refresh(content);
-				scrollPane.getVerticalScrollBar().setValue(0);
+				repaint();
 			}
 		});
 		prev.addActionListener(new ActionListener() {
@@ -395,7 +405,7 @@ public class RepoResult extends JPanel {
 					first.setVisible(false);
 				}
 				refresh(content);
-				scrollPane.getVerticalScrollBar().setValue(0);
+				repaint();
 			}
 		});
 		next.addActionListener(new ActionListener() {
@@ -410,7 +420,7 @@ public class RepoResult extends JPanel {
 					last.setVisible(false);
 				}
 				refresh(content);
-				scrollPane.getVerticalScrollBar().setValue(0);
+				repaint();
 			}
 		});
 		if (totalPage <= 1) {
@@ -418,5 +428,14 @@ public class RepoResult extends JPanel {
 			last.setVisible(false);
 		}
 		////////////////////////////////////////////////////////////////////////
+	}
+	
+	/**
+	 * Overriding paint component
+	 */
+	@Override
+	public void paintComponent(Graphics g) {
+		super.paintComponent(g);
+		scrollPane.getVerticalScrollBar().setValue(0);
 	}
 }
