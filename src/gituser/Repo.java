@@ -2,6 +2,7 @@ package gituser;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
+import java.awt.Graphics;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -32,6 +33,14 @@ public class Repo extends JPanel {
 	 * Repository information
 	 */
 	private JSONObject data;
+	/**
+	 * Original description
+	 */
+	private String original;
+	/**
+	 * Description panel
+	 */
+	private JTextPane description;
 
 	/**
 	 * Create the panel.
@@ -46,12 +55,14 @@ public class Repo extends JPanel {
 	 * @param original Original description
 	 * @return Shortened description
 	 */
-	public static String refineDescription(String original) {
-		if (original.length() <= 110) {
+	public String refineDescription(String original) {
+		int maxLength = (int) ((120.0/450.0) * (double) getWidth()) - 10;
+		System.out.println(120.0/450.0+" "+getWidth()+" "+maxLength);
+		if (original.length() <= maxLength) {
 			return original;
 		}
 		else {
-			int i = 109;
+			int i = maxLength-1;
 			while (original.charAt(i) != ' ') {
 				i--;
 			}
@@ -98,14 +109,14 @@ public class Repo extends JPanel {
 		gbc_repo.gridy = 1;
 		add(repo, gbc_repo);
 		
-		JTextPane description = new JTextPane();
+		description = new JTextPane();
 		description.setBackground(null);
 		description.setEditable(false);
 		if (data.get("description") != null) {
-			description.setText(refineDescription(data.get("description").toString()));
+			original = data.get("description").toString();
 		}
 		else {
-			description.setText("-");
+			original = "-";
 		}
 		GridBagConstraints gbc_description = new GridBagConstraints();
 		gbc_description.anchor = GridBagConstraints.NORTHWEST;
@@ -114,5 +125,11 @@ public class Repo extends JPanel {
 		gbc_description.gridx = 0;
 		gbc_description.gridy = 2;
 		add(description, gbc_description);
+	}
+	
+	@Override
+	public void paintComponent(Graphics g) {
+		super.paintComponent(g);
+		description.setText(refineDescription(original));
 	}
 }

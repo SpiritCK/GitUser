@@ -246,7 +246,7 @@ public class UserResult extends JPanel {
 		GridBagLayout gbl_content = new GridBagLayout();
 		gbl_content.columnWidths = new int[]{471, 0};
 		gbl_content.rowHeights = new int[]{0, 0};
-		gbl_content.columnWeights = new double[]{0.0, Double.MIN_VALUE};
+		gbl_content.columnWeights = new double[]{1.0, Double.MIN_VALUE};
 		gbl_content.rowWeights = new double[]{0.0, Double.MIN_VALUE};
 		content.setLayout(gbl_content);
 		

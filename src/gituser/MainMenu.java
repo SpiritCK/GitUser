@@ -232,7 +232,7 @@ public class MainMenu extends JPanel {
 		GridBagLayout gridBagLayout = new GridBagLayout();
 		gridBagLayout.columnWidths = new int[]{111, 68, 304, 0};
 		gridBagLayout.rowHeights = new int[]{83, 19, 0, 24, 15, 24, 0, 24, 0, 0, 0, 33, 28, 0};
-		gridBagLayout.columnWeights = new double[]{1.0, 0.0, 0.0, Double.MIN_VALUE};
+		gridBagLayout.columnWeights = new double[]{0.0, 0.0, 1.0, Double.MIN_VALUE};
 		gridBagLayout.rowWeights = new double[]{0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, Double.MIN_VALUE};
 		setLayout(gridBagLayout);
 		
@@ -247,7 +247,7 @@ public class MainMenu extends JPanel {
 		logo.setHorizontalAlignment(SwingConstants.RIGHT);
 		GridBagConstraints gbc_logo = new GridBagConstraints();
 		gbc_logo.fill = GridBagConstraints.BOTH;
-		gbc_logo.insets = new Insets(5, 5, 5, 0);
+		gbc_logo.insets = new Insets(5, 5, 5, 5);
 		gbc_logo.gridx = 2;
 		gbc_logo.gridy = 0;
 		add(logo, gbc_logo);
@@ -266,7 +266,7 @@ public class MainMenu extends JPanel {
 		GridBagConstraints gbc_keyword = new GridBagConstraints();
 		gbc_keyword.anchor = GridBagConstraints.NORTH;
 		gbc_keyword.fill = GridBagConstraints.HORIZONTAL;
-		gbc_keyword.insets = new Insets(5, 5, 5, 0);
+		gbc_keyword.insets = new Insets(5, 5, 5, 5);
 		gbc_keyword.gridwidth = 2;
 		gbc_keyword.gridx = 1;
 		gbc_keyword.gridy = 1;
@@ -278,7 +278,7 @@ public class MainMenu extends JPanel {
 		GridBagConstraints gbc_error1 = new GridBagConstraints();
 		gbc_error1.gridwidth = 2;
 		gbc_error1.anchor = GridBagConstraints.NORTHWEST;
-		gbc_error1.insets = new Insets(0, 5, 5, 0);
+		gbc_error1.insets = new Insets(0, 5, 5, 5);
 		gbc_error1.gridx = 1;
 		gbc_error1.gridy = 2;
 		add(error1, gbc_error1);*/
@@ -298,7 +298,7 @@ public class MainMenu extends JPanel {
 		GridBagConstraints gbc_SearchBy = new GridBagConstraints();
 		gbc_SearchBy.anchor = GridBagConstraints.NORTH;
 		gbc_SearchBy.fill = GridBagConstraints.HORIZONTAL;
-		gbc_SearchBy.insets = new Insets(5, 5, 5, 0);
+		gbc_SearchBy.insets = new Insets(5, 5, 5, 5);
 		gbc_SearchBy.gridwidth = 2;
 		gbc_SearchBy.gridx = 1;
 		gbc_SearchBy.gridy = 3;
@@ -335,7 +335,7 @@ public class MainMenu extends JPanel {
 		RepoValue.setColumns(10);
 		GridBagConstraints gbc_RepoValue = new GridBagConstraints();
 		gbc_RepoValue.anchor = GridBagConstraints.WEST;
-		gbc_RepoValue.insets = new Insets(5, 5, 5, 0);
+		gbc_RepoValue.insets = new Insets(5, 5, 5, 5);
 		gbc_RepoValue.gridx = 2;
 		gbc_RepoValue.gridy = 5;
 		add(RepoValue, gbc_RepoValue);
@@ -344,7 +344,7 @@ public class MainMenu extends JPanel {
 		error2.setForeground(Color.RED);
 		error2.setFont(new Font("Dialog", Font.BOLD, 10));
 		GridBagConstraints gbc_error2 = new GridBagConstraints();
-		gbc_error2.insets = new Insets(0, 5, 5, 0);
+		gbc_error2.insets = new Insets(0, 5, 5, 5);
 		gbc_error2.anchor = GridBagConstraints.NORTHWEST;
 		gbc_error2.gridx = 2;
 		gbc_error2.gridy = 6;
@@ -373,7 +373,7 @@ public class MainMenu extends JPanel {
 		FollowValue.setColumns(10);
 		GridBagConstraints gbc_FollowValue = new GridBagConstraints();
 		gbc_FollowValue.anchor = GridBagConstraints.WEST;
-		gbc_FollowValue.insets = new Insets(5, 5, 5, 0);
+		gbc_FollowValue.insets = new Insets(5, 5, 5, 5);
 		gbc_FollowValue.gridx = 2;
 		gbc_FollowValue.gridy = 7;
 		add(FollowValue, gbc_FollowValue);
@@ -391,7 +391,7 @@ public class MainMenu extends JPanel {
 		error3.setFont(new Font("Dialog", Font.BOLD, 10));
 		GridBagConstraints gbc_error3 = new GridBagConstraints();
 		gbc_error3.anchor = GridBagConstraints.NORTHWEST;
-		gbc_error3.insets = new Insets(0, 5, 5, 0);
+		gbc_error3.insets = new Insets(0, 5, 5, 5);
 		gbc_error3.gridx = 2;
 		gbc_error3.gridy = 8;
 		add(error3, gbc_error3);*/
@@ -401,7 +401,7 @@ public class MainMenu extends JPanel {
 		GridBagConstraints gbc_detail = new GridBagConstraints();
 		gbc_detail.anchor = GridBagConstraints.NORTHWEST;
 		gbc_detail.gridwidth = 3;
-		gbc_detail.insets = new Insets(15, 5, 5, 0);
+		gbc_detail.insets = new Insets(15, 5, 5, 5);
 		gbc_detail.gridx = 0;
 		gbc_detail.gridy = 9;
 		add(detail, gbc_detail);
@@ -418,7 +418,7 @@ public class MainMenu extends JPanel {
 		
 		GridBagConstraints gbc_btnSearch = new GridBagConstraints();
 		gbc_btnSearch.anchor = GridBagConstraints.CENTER;
-		gbc_btnSearch.insets = new Insets(30, 5, 5, 0);
+		gbc_btnSearch.insets = new Insets(30, 5, 5, 5);
 		gbc_btnSearch.gridwidth = 3;
 		gbc_btnSearch.gridx = 0;
 		gbc_btnSearch.gridy = 11;
