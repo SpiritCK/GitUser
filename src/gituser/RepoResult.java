@@ -74,7 +74,7 @@ public class RepoResult extends JPanel {
 		user = (JSONObject) s.get("item");
 		totalPage = ((long) user.get("public_repos")-1)/30+1;
 		System.out.println(totalPage);
-		setPreferredSize(new Dimension(500, 500));
+		setPreferredSize(new Dimension(600, 600));
 		
 		prepareGUI();
 	}
@@ -127,7 +127,9 @@ public class RepoResult extends JPanel {
 			page = (JSONArray) ((JSONObject) http.getRequest(user.get("repos_url").toString()+"?page="+curPage)).get("item");
 			showResult(page, content);
 		} catch (Exception e1) {
-			e1.printStackTrace();
+			MainMenu.ExceptionHandler(e1);
+			CardLayout cardLayout = (CardLayout) frame.getContentPane().getLayout();
+			cardLayout.show(frame.getContentPane(), "main_menu");
 		}
 	}
 	
@@ -266,10 +268,10 @@ public class RepoResult extends JPanel {
 		logo.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent arg0) {
-				System.out.println("Back to main menu\n");
+				CardLayout cardLayout = (CardLayout) frame.getContentPane().getLayout();
+				cardLayout.show(frame.getContentPane(), "main_menu");
 			}
 		});
-		//JLabel logo = new JLabel("Logo");
 		GridBagConstraints gbc_logo = new GridBagConstraints();
 		gbc_logo.fill = GridBagConstraints.BOTH;
 		gbc_logo.insets = new Insets(5, 5, 5, 5);
@@ -309,7 +311,9 @@ public class RepoResult extends JPanel {
 			data = (JSONArray) ((JSONObject) http.getRequest(user.get("repos_url").toString())).get("item");
 			showResult(data, content);
 		} catch (Exception e1) {
-			e1.printStackTrace();
+			MainMenu.ExceptionHandler(e1);
+			CardLayout cardLayout = (CardLayout) frame.getContentPane().getLayout();
+			cardLayout.show(frame.getContentPane(), "main_menu");
 		}
 		////////////////////////////////////////////////////////////////////////
 		

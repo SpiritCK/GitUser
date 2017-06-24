@@ -86,10 +86,10 @@ public class MainMenu extends JPanel {
 	 * sho detailed result on/off
 	 */
 	private JCheckBox detail;
-	private JLabel error1;
-	private JLabel error2;
-	private JLabel error3;
-	private JLabel error4;
+	private JLabel errorKeyword;
+	private JLabel errorRepo;
+	private JLabel errorFollow;
+	private static JLabel error403;
 
 	/**
 	 * Create the panel.
@@ -97,6 +97,7 @@ public class MainMenu extends JPanel {
 	public MainMenu(JFrame f) {
 		frame = f;
 		prepareGUI();
+		reset();
 	}
 	
 	/**
@@ -181,24 +182,86 @@ public class MainMenu extends JPanel {
 		return query;
 	}
 	
+	public boolean check() {
+		boolean valid = true;
+		if (keyword.getText().isEmpty()) {
+			valid = false;
+			errorKeyword.setText("Enter search keyword");
+		}
+		if (RepoFilter.isSelected() && RepoValue.getText().isEmpty()) {
+			valid = false;
+			errorRepo.setText("Enter number of repository");
+		}
+		else if (RepoFilter.isSelected()) {
+			try {
+				Integer.parseInt(RepoValue.getText());
+			}
+			catch (Exception e) {
+				valid = false;
+				errorRepo.setText("Enter a number");
+			}
+		}
+		if (FollowFilter.isSelected() && FollowValue.getText().isEmpty()) {
+			valid = false;
+			errorFollow.setText("Enter number of follower");
+		}
+		else if (FollowFilter.isSelected()) {
+			try {
+				Integer.parseInt(FollowValue.getText());
+			}
+			catch (Exception e) {
+				valid = false;
+				errorFollow.setText("Enter a number");
+			}
+		}
+		return valid;
+	}
+	
+	public static void ExceptionHandler(Exception e) {
+		if (e.getMessage().equals("403")) {
+			System.out.println("Rate limit exceeded");
+			error403.setText("Rate limit exceeded, please wait a minute then try again");
+		}
+		else if (e.getMessage().equals("api.github.com") || e.getMessage().equals("Network is unreachable (connect failed)")){
+			System.out.println("No Connection");
+			error403.setText("Please check your internet connection then try again");
+		}
+		else {
+			System.out.println("request error "+e.getMessage());
+			e.printStackTrace();
+		}
+	}
+	
 	/**
 	 * Searching for user
 	 */
 	public void Search() {
-		String url = generateQuery();
-		try {
-			System.out.println(url);
-			HTTPSender http = new HTTPSender();
-			JSONObject result = (JSONObject) http.getRequest(url);
-			UserResult panel_1 = new UserResult(frame, url, result, detail.isSelected());
-			frame.getContentPane().add(panel_1, "user_result");
-			reset();
-			CardLayout cardLayout = (CardLayout) frame.getContentPane().getLayout();
-			cardLayout.show(frame.getContentPane(), "user_result");
-		} catch (Exception e) {
-			System.out.println("request error");
-			e.printStackTrace();
+		clearErrorMsg();
+		if (check()) {
+			String url = generateQuery();
+			try {
+				System.out.println(url);
+				HTTPSender http = new HTTPSender();
+				JSONObject result = (JSONObject) http.getRequest(url);
+				UserResult panel_1 = new UserResult(frame, url, result, detail.isSelected());
+				frame.getContentPane().add(panel_1, "user_result");
+				reset();
+				CardLayout cardLayout = (CardLayout) frame.getContentPane().getLayout();
+				cardLayout.show(frame.getContentPane(), "user_result");
+			} catch (Exception e) {
+				ExceptionHandler(e);
+			}
 		}
+		else {
+			repaint();
+		}
+	}
+	
+	public void clearErrorMsg() {
+		errorKeyword.setText("");
+		errorRepo.setText("");
+		errorFollow.setText("");
+		error403.setText("");
 	}
 	
 	/**
@@ -214,6 +277,7 @@ public class MainMenu extends JPanel {
 		FollowCompare.setSelectedIndex(0);
 		FollowValue.setText("");
 		detail.setSelected(false);
+		clearErrorMsg();
 	}
 
 	/**
@@ -227,7 +291,7 @@ public class MainMenu extends JPanel {
 				keyword.requestFocus();
 			}
 		});
-		setPreferredSize(new Dimension(500, 500));
+		setPreferredSize(new Dimension(600, 600));
 		
 		GridBagLayout gridBagLayout = new GridBagLayout();
 		gridBagLayout.columnWidths = new int[]{111, 68, 304, 0};
@@ -272,16 +336,16 @@ public class MainMenu extends JPanel {
 		gbc_keyword.gridy = 1;
 		add(keyword, gbc_keyword);
 		
-		/*error1 = new JLabel("error1");
-		error1.setForeground(Color.RED);
-		error1.setFont(new Font("Dialog", Font.BOLD, 10));
-		GridBagConstraints gbc_error1 = new GridBagConstraints();
-		gbc_error1.gridwidth = 2;
-		gbc_error1.anchor = GridBagConstraints.NORTHWEST;
-		gbc_error1.insets = new Insets(0, 5, 5, 5);
-		gbc_error1.gridx = 1;
-		gbc_error1.gridy = 2;
-		add(error1, gbc_error1);*/
+		errorKeyword = new JLabel("error1");
+		errorKeyword.setForeground(Color.RED);
+		errorKeyword.setFont(new Font("Dialog", Font.BOLD, 10));
+		GridBagConstraints gbc_errorKeyword = new GridBagConstraints();
+		gbc_errorKeyword.gridwidth = 2;
+		gbc_errorKeyword.anchor = GridBagConstraints.NORTHWEST;
+		gbc_errorKeyword.insets = new Insets(0, 5, 5, 5);
+		gbc_errorKeyword.gridx = 1;
+		gbc_errorKeyword.gridy = 2;
+		add(errorKeyword, gbc_errorKeyword);
 		
 		JLabel label2 = new JLabel("Search By :");
 		label2.setHorizontalAlignment(SwingConstants.LEFT);
@@ -340,15 +404,15 @@ public class MainMenu extends JPanel {
 		gbc_RepoValue.gridy = 5;
 		add(RepoValue, gbc_RepoValue);
 		
-		/*error2 = new JLabel("error2");
-		error2.setForeground(Color.RED);
-		error2.setFont(new Font("Dialog", Font.BOLD, 10));
-		GridBagConstraints gbc_error2 = new GridBagConstraints();
-		gbc_error2.insets = new Insets(0, 5, 5, 5);
-		gbc_error2.anchor = GridBagConstraints.NORTHWEST;
-		gbc_error2.gridx = 2;
-		gbc_error2.gridy = 6;
-		add(error2, gbc_error2);*/
+		errorRepo = new JLabel("error2");
+		errorRepo.setForeground(Color.RED);
+		errorRepo.setFont(new Font("Dialog", Font.BOLD, 10));
+		GridBagConstraints gbc_errorRepo = new GridBagConstraints();
+		gbc_errorRepo.insets = new Insets(0, 5, 5, 5);
+		gbc_errorRepo.anchor = GridBagConstraints.NORTHWEST;
+		gbc_errorRepo.gridx = 2;
+		gbc_errorRepo.gridy = 6;
+		add(errorRepo, gbc_errorRepo);
 		
 		FollowFilter = new JCheckBox("Follower :");
 		FollowFilter.setMnemonic(KeyEvent.VK_F);
@@ -378,23 +442,15 @@ public class MainMenu extends JPanel {
 		gbc_FollowValue.gridy = 7;
 		add(FollowValue, gbc_FollowValue);
 		
-		JButton btnSearch = new JButton("Search");
-		btnSearch.setPreferredSize(new Dimension(100, 30));
-		btnSearch.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent arg0) {
-				Search();
-			}
-		});
-		
-		/*error3 = new JLabel("error3");
-		error3.setForeground(Color.RED);
-		error3.setFont(new Font("Dialog", Font.BOLD, 10));
-		GridBagConstraints gbc_error3 = new GridBagConstraints();
-		gbc_error3.anchor = GridBagConstraints.NORTHWEST;
-		gbc_error3.insets = new Insets(0, 5, 5, 5);
-		gbc_error3.gridx = 2;
-		gbc_error3.gridy = 8;
-		add(error3, gbc_error3);*/
+		errorFollow = new JLabel("error3");
+		errorFollow.setForeground(Color.RED);
+		errorFollow.setFont(new Font("Dialog", Font.BOLD, 10));
+		GridBagConstraints gbc_errorFollow = new GridBagConstraints();
+		gbc_errorFollow.anchor = GridBagConstraints.NORTHWEST;
+		gbc_errorFollow.insets = new Insets(0, 5, 5, 5);
+		gbc_errorFollow.gridx = 2;
+		gbc_errorFollow.gridy = 8;
+		add(errorFollow, gbc_errorFollow);
 		
 		detail = new JCheckBox("Show detailed result (may cause the program to run slowly)");
 		detail.setMnemonic(KeyEvent.VK_S);
@@ -406,16 +462,23 @@ public class MainMenu extends JPanel {
 		gbc_detail.gridy = 9;
 		add(detail, gbc_detail);
 		
-		/*error4 = new JLabel("error4");
-		error4.setForeground(Color.RED);
-		GridBagConstraints gbc_error4 = new GridBagConstraints();
-		gbc_error4.anchor = GridBagConstraints.NORTHWEST;
-		gbc_error4.gridwidth = 3;
-		gbc_error4.insets = new Insets(5, 5, 5, 5);
-		gbc_error4.gridx = 0;
-		gbc_error4.gridy = 10;
-		add(error4, gbc_error4);*/
+		error403 = new JLabel("error4");
+		error403.setForeground(Color.RED);
+		GridBagConstraints gbc_error403 = new GridBagConstraints();
+		gbc_error403.anchor = GridBagConstraints.NORTHWEST;
+		gbc_error403.gridwidth = 3;
+		gbc_error403.insets = new Insets(5, 5, 5, 5);
+		gbc_error403.gridx = 0;
+		gbc_error403.gridy = 10;
+		add(error403, gbc_error403);
 		
+		JButton btnSearch = new JButton("Search");
+		btnSearch.setPreferredSize(new Dimension(100, 30));
+		btnSearch.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				Search();
+			}
+		});
 		GridBagConstraints gbc_btnSearch = new GridBagConstraints();
 		gbc_btnSearch.anchor = GridBagConstraints.CENTER;
 		gbc_btnSearch.insets = new Insets(30, 5, 5, 5);

@@ -33,7 +33,8 @@ public class HTTPSender {
 		conn.setRequestMethod("GET");
 		int responseCode = conn.getResponseCode();
 		if (responseCode != 200) {
-			throw new Exception();
+			Integer temp = responseCode;
+			throw new Exception(temp.toString());
 		}
 		
 		BufferedReader in = new BufferedReader(new InputStreamReader(conn.getInputStream()));
