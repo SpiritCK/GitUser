@@ -2,6 +2,31 @@
 
 GitUser is a Java application that is used for searching GitHub user, based on either their username or email, and open their repositories.
 
+![oie_m38ncooauxzx](https://user-images.githubusercontent.com/23207046/27508120-004b8c64-5909-11e7-9d53-8ec5896178a1.png)
+
+GitUser will prompt you to insert your search criteria - keyword and filters. If you don't type it right (for example typing "asd" in Repository Filter instead of number) you will get error message and GitUser won't continue.
+
+After you enter the search criteria, GitUser will show you a list of GitHub users that match your search. Each page consist of 30 users with maximum 34 pages.
+
+![oie_k0krfege1srh](https://user-images.githubusercontent.com/23207046/27508128-0c53b6f8-5909-11e7-88c1-11b43a513b6d.png)
+
+The "Show detailed result" feature will result like the image above. If you didn't check the mentioned feature, GitUser will only show you their usernae.
+
+From the list, you can click the user whose repositories you want to see.
+
+![oie_icifgdqjf7kv](https://user-images.githubusercontent.com/23207046/27508131-114efc44-5909-11e7-8223-10fabee94859.png)
+
+The aforementioned user's repositories will then be displayed. From here, you can see their repositories - name, link, and description. You can also see their detailed information such as name, email, username, and number of repositories and follower.
+
+Click on one of the repositories and you will be directed to your default browser which will open the selected repository.
+
+![oie_x7clvu6ir3g9](https://user-images.githubusercontent.com/23207046/27508132-15849724-5909-11e7-97be-f58a41b6a3eb.png)
+
+
+
+------------------------------------------------------------------
+
+# About JSON, REST, and GitHub API
 
 ------------------------------------------------------------------
 
