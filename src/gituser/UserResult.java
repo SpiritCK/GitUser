@@ -91,7 +91,7 @@ public class UserResult extends JPanel {
 		url = u;
 		curPage = 1;
 		detail = d;
-		setPreferredSize(new Dimension(500, 500));
+		setPreferredSize(new Dimension(600, 600));
 		
 		prepareGUI(page1);
 	}
@@ -112,10 +112,10 @@ public class UserResult extends JPanel {
 			status.setVisible(false);
 		}
 		
-		for (long i = startCount; i < finishCount; i++) {
-			String link = (String) ((JSONObject) ((JSONArray) ((JSONObject) data.get("item")).get("items")).get((int) (i-startCount))).get("url");
-			JSONObject obj;
-			try {
+		try {
+			for (long i = startCount; i < finishCount; i++) {
+				String link = (String) ((JSONObject) ((JSONArray) ((JSONObject) data.get("item")).get("items")).get((int) (i-startCount))).get("url");
+				JSONObject obj;
 				User user;
 				if (detail) {
 					HTTPSender http = new HTTPSender();
@@ -137,9 +137,11 @@ public class UserResult extends JPanel {
 				gbc_user.gridy = (int) (i-startCount);
 				content.add(user, gbc_user);
 				System.out.println(i+" : "+((JSONObject) ((JSONArray) ((JSONObject) data.get("item")).get("items")).get((int) (i-startCount))).get("login"));
-			} catch (Exception e) {
-				e.printStackTrace();
 			}
+		} catch (Exception e) {
+			MainMenu.ExceptionHandler(e);
+			CardLayout cardLayout = (CardLayout) frame.getContentPane().getLayout();
+			cardLayout.show(frame.getContentPane(), "main_menu");
 		}
 	}
 	
@@ -156,7 +158,9 @@ public class UserResult extends JPanel {
 			page = (JSONObject) http.getRequest(url+"&page="+curPage);
 			showResult(page, content);
 		} catch (Exception e1) {
-			e1.printStackTrace();
+			MainMenu.ExceptionHandler(e1);
+			CardLayout cardLayout = (CardLayout) frame.getContentPane().getLayout();
+			cardLayout.show(frame.getContentPane(), "main_menu");
 		}
 		
 	}
@@ -201,7 +205,8 @@ public class UserResult extends JPanel {
 		logo.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent arg0) {
-				System.out.println("Back to main menu\n");
+				CardLayout cardLayout = (CardLayout) frame.getContentPane().getLayout();
+				cardLayout.show(frame.getContentPane(), "main_menu");
 			}
 		});
 		//JLabel logo = new JLabel("Logo");

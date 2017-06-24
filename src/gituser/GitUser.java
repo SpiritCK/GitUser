@@ -6,7 +6,7 @@ import java.awt.CardLayout;
 /**
  * Main program
  * @author Kevin Jonathan
- * @version 1.1
+ * @version 1.3
  */
 public class GitUser {
 	/**
@@ -41,8 +41,8 @@ public class GitUser {
 	 * Initialize the contents of the frame.
 	 */
 	private void initialize() {
-		frame = new JFrame("GitUser v1.2");
-		frame.setBounds(100, 100, 500, 500);
+		frame = new JFrame("GitUser v1.3");
+		frame.setBounds(100, 100, 600, 600);
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frame.getContentPane().setLayout(new CardLayout(0, 0));
 		

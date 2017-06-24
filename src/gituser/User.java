@@ -72,21 +72,18 @@ public class User extends JPanel {
 			}
 			@Override
 			public void mouseClicked(MouseEvent arg0) {
+				System.out.println("Enter "+data.get("login")+"'s repository");
 				try {
-					System.out.println("Enter "+data.get("login")+"'s repository");
-					try {
-						HTTPSender http = new HTTPSender();
-						JSONObject result = (JSONObject) http.getRequest((String) data.get("url"));
-						RepoResult panel_1 = new RepoResult(frame, result);
-						frame.getContentPane().add(panel_1, "repo_result");
-						CardLayout cardLayout = (CardLayout) frame.getContentPane().getLayout();
-						cardLayout.show(frame.getContentPane(), "repo_result");
-					} catch (Exception e) {
-						System.out.println("request error");
-						e.printStackTrace();
-					}
+					HTTPSender http = new HTTPSender();
+					JSONObject result = (JSONObject) http.getRequest((String) data.get("url"));
+					RepoResult panel_1 = new RepoResult(frame, result);
+					frame.getContentPane().add(panel_1, "repo_result");
+					CardLayout cardLayout = (CardLayout) frame.getContentPane().getLayout();
+					cardLayout.show(frame.getContentPane(), "repo_result");
 				} catch (Exception e) {
-					e.printStackTrace();
+					MainMenu.ExceptionHandler(e);
+					CardLayout cardLayout = (CardLayout) frame.getContentPane().getLayout();
+					cardLayout.show(frame.getContentPane(), "main_menu");
 				}
 			}
 		});

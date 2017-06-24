@@ -10,7 +10,7 @@ import org.junit.runners.Suite.SuiteClasses;
  * @author Kevin Jonathan
  */
 @RunWith(Suite.class)
-@SuiteClasses({ MainMenuTest.class, RepoTest.class })
+@SuiteClasses({ MainMenuTest.class })
 public class AllTests {
 
 }
